@@ -1,0 +1,31 @@
+const manifest = {
+            "name": "GymControl",
+            "short_name": "GymControl",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#6366f1",
+            "description": "Sistema de control de membresías para gimnasios",
+            "icons": [                
+                {
+                    "src": "icons/Logo-gym-control-152x152.png",
+                    "sizes": "152x152",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/Logo-gym-control-180x180.png",
+                    "sizes": "180x180",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/Logo-gym-control-384x384.png",
+                    "sizes": "384x384",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/Logo-gym-control-500x500.png",
+                    "sizes": "500x500",
+                    "type": "image/png"
+                }
+            ]
+        };
