@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<link rel="manifest" href="/manifest.json"><!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/Logo-gym-control-180x180.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="GymControl">
+    <link rel="apple-touch-startup-image" href="/icons/Logo-gym-control-splash.png">
 
     <style>
         /* Estilos para el sidebar en pantallas pequeñas (oculto por defecto) */
@@ -51,7 +56,8 @@
 </head>
 <body class="bg-gray-100 font-sans">
     <div class="flex h-screen overflow-hidden">
-        <div class="sidebar bg-indigo-800 text-white w-64 fixed md:relative h-full z-10">
+        <div class="sidebar bg-indigo-800 text-white w-64 fixed md:relative h-full z-10 hidden">
+    </div>
             <div class="p-4 flex items-center justify-between border-b border-indigo-700">
                 <h1 class="text-xl font-bold">GymControl</h1>
                 <button id="closeSidebar" class="md:hidden">
@@ -96,7 +102,7 @@
         </div>
         
         <div class="flex-1 overflow-auto custom-scroll">
-            <header class="bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
+            <header class="bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10 hidden">
                 <button id="toggleSidebar" class="md:hidden">
                     <i class="fas fa-bars text-indigo-800"></i>
                 </button>
@@ -111,7 +117,7 @@
                 </div>
             </header>
             
-            <main class="p-4">
+            <main class="p-4 hidden">
               <div id="checkin-content" class="content-section hidden">
                     <div class="mb-6">
                         <h2 class="text-2xl font-bold text-gray-800">Registro de Ingreso</h2>
@@ -806,7 +812,32 @@
         </div>
     </div>
     
+  
+  
     <script>
+      
+      // Importa los módulos necesarios de Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+    // TU CONFIGURACIÓN DE FIREBASE
+    const firebaseConfig = {
+    apiKey: "AIzaSyAztb-kIE7Wj2VuZfE1LU-Pxra5dIrHyZg",
+    authDomain: "gymcontrol-7a4f7.firebaseapp.com",
+    projectId: "gymcontrol-7a4f7",
+    storageBucket: "gymcontrol-7a4f7.firebasestorage.app",
+    messagingSenderId: "493369866195",
+    appId: "1:493369866195:web:4b9b22081dbd4e860b6126",
+    measurementId: "G-WBX1EWBNBC"
+  };
+
+    // Inicializa Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const analytics = getAnalytics(app);
+      
+      
         // =================================================================
         // CONFIGURACIÓN DE TAILWIND CSS
         // =================================================================
@@ -1432,61 +1463,159 @@
         }
         
         // =================================================================
-        // PWA: MANIFIESTO (Definido en el mismo archivo para simplicidad)
-        // =================================================================
-        // Este objeto simula el contenido del archivo `manifest.json`.
-        // Define cómo se mostrará la PWA al ser instalada en el dispositivo del usuario.
-        const manifest = {
-            "name": "GymControl", // Nombre largo de la aplicación
-            "short_name": "GymControl", // Nombre corto, usado en la pantalla de inicio
-            "start_url": ".", // URL de inicio de la aplicación
-            "display": "standalone", // Modo de visualización (standalone simula una aplicación nativa)
-            "background_color": "#ffffff", // Color de fondo de la pantalla de bienvenida
-            "theme_color": "#6366f1", // Color del tema de la aplicación (barra de estado, etc.)
-            "description": "Sistema de control de membresías para gimnasios", // Descripción de la aplicación
-            "icons": [ // Array de iconos para diferentes tamaños
-                {
-                    "src": "icons/icon-72x72.png",
-                    "sizes": "72x72",
-                    "type": "image/png"
-                },
-                {
-                    "src": "icons/icon-96x96.png",
-                    "sizes": "96x96",
-                    "type": "image/png"
-                },
-                {
-                    "src": "icons/icon-128x128.png",
-                    "sizes": "128x128",
-                    "type": "image/png"
-                },
-                {
-                    "src": "icons/icon-144x144.png",
-                    "sizes": "144x144",
-                    "type": "image/png"
-                },
-                {
-                    "src": "icons/icon-152x152.png",
-                    "sizes": "152x152",
-                    "type": "image/png"
-                },
-                {
-                    "src": "icons/icon-192x192.png",
-                    "sizes": "192x192",
-                    "type": "image/png"
-                },
-                {
-                    "src": "icons/icon-384x384.png",
-                    "sizes": "384x384",
-                    "type": "image/png"
-                },
-                {
-                    "src": "icons/icon-512x512.png",
-                    "sizes": "512x512",
-                    "type": "image/png"
-                }
-            ]
-        };
+// MANEJO DEL MODAL DE AUTENTICACIÓN
+// =================================================================
+const authModal = document.getElementById('auth-modal');
+const closeAuthModalBtn = document.getElementById('close-auth-modal');
+const openAuthModalBtn = document.getElementById('open-auth-modal');
+const tabLogin = document.getElementById('tab-login');
+const tabRegister = document.getElementById('tab-register');
+const loginForm = document.getElementById('login-form-container');
+const registerForm = document.getElementById('register-form-container');
+
+// Botones y campos de formulario
+const loginEmailInput = document.getElementById('login-email');
+const loginPasswordInput = document.getElementById('login-password');
+const loginBtn = document.getElementById('login-btn');
+const googleLoginBtn = document.getElementById('google-login-btn');
+const registerEmailInput = document.getElementById('register-email');
+const registerPasswordInput = document.getElementById('register-password');
+const registerPasswordConfirmInput = document.getElementById('register-password-confirm');
+const registerBtn = document.getElementById('register-btn');
+const logoutBtn = document.querySelector('.logout-btn');
+
+// Abrir/Cerrar Modal
+function openAuthModal() {
+    authModal.classList.remove('hidden');
+}
+
+function closeAuthModal() {
+    authModal.classList.add('hidden');
+}
+
+openAuthModalBtn.addEventListener('click', openAuthModal);
+closeAuthModalBtn.addEventListener('click', closeAuthModal);
+
+// Manejar pestañas
+tabLogin.addEventListener('click', () => {
+    tabLogin.classList.replace('text-gray-500', 'text-indigo-600');
+    tabLogin.classList.add('border-indigo-600');
+    tabRegister.classList.replace('text-indigo-600', 'text-gray-500');
+    tabRegister.classList.remove('border-indigo-600');
+    loginForm.classList.remove('hidden');
+    registerForm.classList.add('hidden');
+});
+
+tabRegister.addEventListener('click', () => {
+    tabRegister.classList.replace('text-gray-500', 'text-indigo-600');
+    tabRegister.classList.add('border-indigo-600');
+    tabLogin.classList.replace('text-indigo-600', 'text-gray-500');
+    tabLogin.classList.remove('border-indigo-600');
+    registerForm.classList.remove('hidden');
+    loginForm.classList.add('hidden');
+});
+
+// Autenticación con Correo y Contraseña
+loginBtn.addEventListener('click', () => {
+    const email = loginEmailInput.value;
+    const password = loginPasswordInput.value;
+    signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            showNotification('Inicio de sesión exitoso. ¡Bienvenido!');
+            closeAuthModal();
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            let errorMessage = 'Error al iniciar sesión. Por favor, verifica tus credenciales.';
+            if (errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found') {
+                errorMessage = 'Correo o contraseña incorrectos.';
+            }
+            showNotification(errorMessage, true);
+        });
+});
+
+registerBtn.addEventListener('click', () => {
+    const email = registerEmailInput.value;
+    const password = registerPasswordInput.value;
+    const passwordConfirm = registerPasswordConfirmInput.value;
+
+    if (password !== passwordConfirm) {
+        showNotification('Las contraseñas no coinciden.', true);
+        return;
+    }
+
+    createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            showNotification('Registro exitoso. ¡Ya puedes iniciar sesión!');
+            tabLogin.click(); // Cambia a la pestaña de login
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            let errorMessage = 'Error al registrar el usuario.';
+            if (errorCode === 'auth/email-already-in-use') {
+                errorMessage = 'El correo electrónico ya está en uso.';
+            } else if (errorCode === 'auth/weak-password') {
+                errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+            } else if (errorCode === 'auth/invalid-email') {
+                errorMessage = 'El formato del correo electrónico es inválido.';
+            }
+            showNotification(errorMessage, true);
+        });
+});
+
+// Autenticación con Google
+googleLoginBtn.addEventListener('click', () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            showNotification('Inicio de sesión con Google exitoso. ¡Bienvenido!');
+            closeAuthModal();
+        })
+        .catch((error) => {
+            const errorMessage = 'Error al iniciar sesión con Google.';
+            showNotification(errorMessage, true);
+        });
+});
+
+// Estado de Autenticación
+onAuthStateChanged(auth, (user) => {
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    if (user) {
+        // Usuario logueado
+        openAuthModalBtn.classList.add('hidden');
+        logoutBtn.parentElement.classList.remove('hidden');
+        // Muestra el contenido de la aplicación
+        sidebar.classList.remove('hidden');
+        mainContent.classList.remove('hidden');
+        header.classList.remove('hidden');
+        showDashboard(); // Muestra el dashboard por defecto
+    } else {
+        // Usuario no logueado
+        openAuthModalBtn.classList.remove('hidden');
+        logoutBtn.parentElement.classList.add('hidden');
+        // Oculta el contenido de la aplicación y muestra el modal de login
+        sidebar.classList.add('hidden');
+        mainContent.classList.add('hidden');
+        header.classList.add('hidden');
+        openAuthModal();
+    }
+});
+
+// Cerrar sesión
+logoutBtn.addEventListener('click', () => {
+    signOut(auth)
+        .then(() => {
+            showNotification('Sesión cerrada correctamente.');
+        })
+        .catch((error) => {
+            showNotification('Error al cerrar sesión.', true);
+        });
+});
+
+
         
         // =================================================================
         // PWA: SERVICE WORKER (Simulado en el mismo archivo para demostración)
@@ -1529,6 +1658,45 @@
                 );
             });
         `;
+      
+      
     </script>
+  
+  <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-sm animate-fadeIn">
+        <div class="flex justify-between items-center border-b px-6 py-4">
+            <h3 class="text-lg font-semibold">Accede a GymControl</h3>
+            <button id="close-auth-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="flex border-b mb-4">
+                <button id="tab-login" class="flex-1 py-2 text-center text-sm font-medium text-indigo-600 border-b-2 border-indigo-600 transition">Iniciar Sesión</button>
+                <button id="tab-register" class="flex-1 py-2 text-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition">Registrarse</button>
+            </div>
+
+            <div id="login-form-container" class="space-y-4">
+                <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="password" id="login-password" placeholder="Contraseña" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <button id="login-btn" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Iniciar Sesión</button>
+                <p class="text-center text-sm text-gray-500">o</p>
+                <button id="google-login-btn" class="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100 transition">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5 mr-2"> Iniciar con Google
+                </button>
+            </div>
+            
+            <div id="register-form-container" class="space-y-4 hidden">
+                <input type="email" id="register-email" placeholder="Correo electrónico" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="password" id="register-password" placeholder="Contraseña" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="password" id="register-password-confirm" placeholder="Confirmar contraseña" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <button id="register-btn" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Registrarse</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="open-auth-modal" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hidden">Login</button>
+  
 </body>
 </html>
