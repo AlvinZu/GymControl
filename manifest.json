@@ -13,7 +13,7 @@ const manifest = {
                     "type": "image/png"
                 },
                 {
-                    "src": "icons/Logo-gym-control-180x180.png",
+                    "src": "Logo-gym-control-180x180.png",
                     "sizes": "180x180",
                     "type": "image/png"
                 },
@@ -23,9 +23,10 @@ const manifest = {
                     "type": "image/png"
                 },
                 {
-                    "src": "icons/Logo-gym-control-500x500.png",
+                    "src": "Logo-gym-control-500x500.png",
                     "sizes": "500x500",
                     "type": "image/png"
                 }
             ]
+
         };
