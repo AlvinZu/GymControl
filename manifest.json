@@ -1,4 +1,4 @@
-const manifest = {
+{
             "name": "GymControl",
             "short_name": "GymControl",
             "start_url": ".",
@@ -30,3 +30,4 @@ const manifest = {
             ]
 
         };
+
