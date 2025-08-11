@@ -1,4 +1,4 @@
-<link rel="manifest" href="/manifest.json"><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -1462,7 +1462,7 @@
             });
         }
         
-        // =================================================================
+// =================================================================
 // MANEJO DEL MODAL DE AUTENTICACIÓN
 // =================================================================
 const authModal = document.getElementById('auth-modal');
@@ -1543,11 +1543,17 @@ registerBtn.addEventListener('click', () => {
         showNotification('Las contraseñas no coinciden.', true);
         return;
     }
+    
+    // Agrega una validación básica para la longitud de la contraseña
+    if (password.length < 6) {
+        showNotification('La contraseña debe tener al menos 6 caracteres.', true);
+        return;
+    }
 
     createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             showNotification('Registro exitoso. ¡Ya puedes iniciar sesión!');
-            tabLogin.click(); // Cambia a la pestaña de login
+            tabLogin.click(); // Cambia a la pestaña de login después del registro
         })
         .catch((error) => {
             const errorCode = error.code;
@@ -1559,6 +1565,7 @@ registerBtn.addEventListener('click', () => {
             } else if (errorCode === 'auth/invalid-email') {
                 errorMessage = 'El formato del correo electrónico es inválido.';
             }
+            console.error('Error de registro:', error);
             showNotification(errorMessage, true);
         });
 });
@@ -1573,6 +1580,7 @@ googleLoginBtn.addEventListener('click', () => {
         })
         .catch((error) => {
             const errorMessage = 'Error al iniciar sesión con Google.';
+            console.error('Error de autenticación con Google:', error);
             showNotification(errorMessage, true);
         });
 });
