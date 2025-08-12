@@ -7,15 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-  
-  <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js"></script>
-  
-  <!-- Icono App -->
+    <!-- Icono App -->
     <link rel="icon" type="image/png" sizes="180x180" href="icon-180x180.png">
     <link rel="icon" type="image/png" sizes="500x500" href="icon-500x500.png">
     <link rel="apple-touch-icon" href="/icon-180x180.png">
@@ -96,10 +88,10 @@
                 </div>
                 
                 <div class="space-y-4 w-full">
-                    <button onclick="showScreen('login-screen')" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <button id="welcome-login-btn" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         Iniciar Sesión
                     </button>
-                    <button onclick="showScreen('register-screen')" class="btn-primary w-full bg-white text-indigo-600 py-3 px-4 rounded-lg font-medium border border-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <button id="welcome-register-btn" class="btn-primary w-full bg-white text-indigo-600 py-3 px-4 rounded-lg font-medium border border-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         Registrarse
                     </button>
                 </div>
@@ -108,14 +100,14 @@
         
         <!-- Login Screen -->
         <div id="login-screen" class="screen p-6 h-screen flex flex-col" style="display: none;">
-            <button onclick="showScreen('welcome-screen')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+            <button id="login-back-btn" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
                 <i class="fas fa-arrow-left mr-2"></i> Volver
             </button>
             
             <div class="max-w-md mx-auto w-full">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Iniciar Sesión</h2>
                 
-                <form class="space-y-4">
+                <form id="login-form" class="space-y-4">
                     <div>
                         <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
                         <input type="email" id="login-email" class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="tu@email.com" required>
@@ -134,7 +126,7 @@
                         <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800">Olvidé mi contraseña</a>
                     </div>
                     
-                    <button type="button" onclick="loginUser()" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <button type="submit" id="login-btn" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         Iniciar Sesión
                     </button>
                     
@@ -147,12 +139,12 @@
                         </div>
                     </div>
                     
-                    <button type="button" class="btn-primary w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
+                    <button type="button" id="google-login-btn" class="btn-primary w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
                         <i class="fab fa-google text-red-500 mr-2"></i> Acceder con Google
                     </button>
                     
                     <div class="text-center text-sm text-gray-600">
-                        ¿No tienes una cuenta? <button onclick="showScreen('register-screen')" class="text-indigo-600 hover:text-indigo-800 font-medium">Regístrate</button>
+                        ¿No tienes una cuenta? <button id="login-register-btn" class="text-indigo-600 hover:text-indigo-800 font-medium">Regístrate</button>
                     </div>
                 </form>
             </div>
@@ -160,14 +152,14 @@
         
         <!-- Register Screen -->
         <div id="register-screen" class="screen p-6 h-screen flex flex-col" style="display: none;">
-            <button onclick="showScreen('welcome-screen')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+            <button id="register-back-btn" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
                 <i class="fas fa-arrow-left mr-2"></i> Volver
             </button>
             
             <div class="max-w-md mx-auto w-full">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Crear Cuenta</h2>
                 
-                <form class="space-y-4">
+                <form id="register-form" class="space-y-4">
                     <div>
                         <label for="register-name" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
                         <input type="text" id="register-name" class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Tu nombre" required>
@@ -184,7 +176,7 @@
                         <p class="mt-1 text-xs text-gray-500">Mínimo 8 caracteres con letras y números</p>
                     </div>
                     
-                    <button type="button" onclick="registerUser()" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <button type="submit" id="register-btn" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         Crear Cuenta
                     </button>
                     
@@ -197,12 +189,12 @@
                         </div>
                     </div>
                     
-                    <button type="button" class="btn-primary w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
+                    <button type="button" id="google-register-btn" class="btn-primary w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
                         <i class="fab fa-google text-red-500 mr-2"></i> Acceder con Google
                     </button>
                     
                     <div class="text-center text-sm text-gray-600">
-                        ¿Ya tienes una cuenta? <button onclick="showScreen('login-screen')" class="text-indigo-600 hover:text-indigo-800 font-medium">Inicia Sesión</button>
+                        ¿Ya tienes una cuenta? <button id="register-login-btn" class="text-indigo-600 hover:text-indigo-800 font-medium">Inicia Sesión</button>
                     </div>
                 </form>
             </div>
@@ -214,10 +206,10 @@
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-2xl font-bold text-gray-800">Gestión de Usuarios</h2>
                     <div class="flex space-x-4">
-                        <button onclick="showScreen('create-user-screen')" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
+                        <button id="add-user-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
                             <i class="fas fa-plus mr-2"></i> Agregar Usuario
                         </button>
-                        <button onclick="showScreen('welcome-screen')" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                        <button id="logout-btn" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
                             Cerrar Sesión
                         </button>
                     </div>
@@ -245,103 +237,37 @@
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">001</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                                <span class="text-indigo-600 font-medium">JD</span>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Juan Domínguez</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">juan@example.com</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Premium Anual</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activa</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button onclick="editUser(1)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                        <button onclick="deleteUser(1)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">002</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                                <span class="text-blue-600 font-medium">MP</span>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">María Pérez</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">maria@example.com</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Básica Mensual</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Próximo a vencer</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button onclick="editUser(2)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                        <button onclick="deleteUser(2)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">003</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                                                <span class="text-red-600 font-medium">CG</span>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">Carlos Gómez</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">carlos@example.com</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Premium Anual</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Vencida</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button onclick="editUser(3)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                        <button onclick="deleteUser(3)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
+                            <tbody id="users-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Filas de usuarios se cargarán aquí desde Firestore -->
                             </tbody>
                         </table>
                     </div>
                 </div>
                 
                 <div class="mt-6 flex justify-between items-center">
-                    <button onclick="showScreen('membership-management-screen')" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <button id="manage-memberships-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         Gestionar Membresías
                     </button>
                 </div>
             </div>
-
         </div>
 
         <!-- Admin Navigation Bar -->
         <div class="bg-white border-t border-gray-200 py-3 px-4 fixed bottom-0 left-0 right-0 shadow-lg" id="admin-navbar" style="display: none;">
             <div class="flex justify-around max-w-md mx-auto">
-                <button onclick="showScreen('admin-dashboard')" class="flex flex-col items-center text-indigo-600">
+                <button id="nav-users-btn" class="flex flex-col items-center text-indigo-600">
                     <i class="fas fa-users text-xl"></i>
                     <span class="text-xs mt-1">Usuarios</span>
                 </button>
-                <button onclick="showScreen('membership-management-screen')" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+                <button id="nav-memberships-btn" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
                     <i class="fas fa-id-card text-xl"></i>
                     <span class="text-xs mt-1">Membresías</span>
                 </button>
-                <button onclick="showScreen('access-control-screen')" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+                <button id="nav-access-btn" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
                     <i class="fas fa-door-open text-xl"></i>
                     <span class="text-xs mt-1">Acceso</span>
                 </button>
-                <button onclick="showScreen('reports-screen')" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+                <button id="nav-reports-btn" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
                     <i class="fas fa-chart-bar text-xl"></i>
                     <span class="text-xs mt-1">Reportes</span>
                 </button>
@@ -351,13 +277,14 @@
         <!-- Create/Edit User Screen -->
         <div id="create-user-screen" class="screen p-6">
             <div class="max-w-2xl mx-auto">
-                <button onclick="showScreen('admin-dashboard')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                <button id="create-user-back-btn" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
                     <i class="fas fa-arrow-left mr-2"></i> Volver
                 </button>
                 
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Agregar Nuevo Usuario</h2>
+                <h2 id="create-user-title" class="text-2xl font-bold text-gray-800 mb-6">Agregar Nuevo Usuario</h2>
                 
-                <form class="space-y-6">
+                <form id="create-user-form" class="space-y-6">
+                    <input type="hidden" id="user-doc-id">
                     <div class="bg-white shadow overflow-hidden rounded-lg p-6">
                         <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                             <div class="sm:col-span-3">
@@ -378,10 +305,7 @@
                             <div class="sm:col-span-3">
                                 <label for="user-membership" class="block text-sm font-medium text-gray-700">Tipo de Membresía</label>
                                 <select id="user-membership" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                    <option value="1">Básica Mensual - $30</option>
-                                    <option value="2">Premium Mensual - $50</option>
-                                    <option value="3">Básica Anual - $300</option>
-                                    <option value="4">Premium Anual - $500</option>
+                                    <!-- Options will be populated from Firestore -->
                                 </select>
                             </div>
                             
@@ -393,10 +317,10 @@
                     </div>
                     
                     <div class="flex justify-end">
-                        <button type="button" onclick="showScreen('admin-dashboard')" class="btn-primary bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
+                        <button type="button" id="cancel-user-btn" class="btn-primary bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
                             Cancelar
                         </button>
-                        <button type="button" onclick="saveUser()" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <button type="submit" id="save-user-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Guardar Usuario
                         </button>
                     </div>
@@ -410,10 +334,10 @@
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-2xl font-bold text-gray-800">Gestión de Membresías</h2>
                     <div class="flex space-x-4">
-                        <button onclick="showScreen('create-membership-screen')" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
+                        <button id="add-membership-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
                             <i class="fas fa-plus mr-2"></i> Nueva Membresía
                         </button>
-                        <button onclick="showScreen('admin-dashboard')" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                        <button id="memberships-back-to-users-btn" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
                             Volver a Usuarios
                         </button>
                     </div>
@@ -430,51 +354,8 @@
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">Básica Mensual</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1 mes</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$30.00</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button onclick="editMembership(1)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                        <button onclick="deleteMembership(1)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">Premium Mensual</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1 mes</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$50.00</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button onclick="editMembership(2)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                        <button onclick="deleteMembership(2)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">Básica Anual</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12 meses</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$300.00</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button onclick="editMembership(3)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                        <button onclick="deleteMembership(3)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">Premium Anual</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12 meses</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$500.00</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button onclick="editMembership(4)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                        <button onclick="deleteMembership(4)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
+                            <tbody id="memberships-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Filas de membresías se cargarán aquí desde Firestore -->
                             </tbody>
                         </table>
                     </div>
@@ -485,7 +366,7 @@
         <!-- Access Control Screen -->
         <div id="access-control-screen" class="screen p-6">
             <div class="max-w-7xl mx-auto">
-                <button onclick="showScreen('admin-dashboard')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                <button id="access-back-btn" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
                     <i class="fas fa-arrow-left mr-2"></i> Volver
                 </button>
                 
@@ -500,7 +381,7 @@
         <!-- Reports Screen -->
         <div id="reports-screen" class="screen p-6">
             <div class="max-w-7xl mx-auto">
-                <button onclick="showScreen('admin-dashboard')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                <button id="reports-back-btn" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
                     <i class="fas fa-arrow-left mr-2"></i> Volver
                 </button>
                 
@@ -515,13 +396,14 @@
         <!-- Create/Edit Membership Screen -->
         <div id="create-membership-screen" class="screen p-6">
             <div class="max-w-2xl mx-auto">
-                <button onclick="showScreen('membership-management-screen')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                <button id="create-membership-back-btn" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
                     <i class="fas fa-arrow-left mr-2"></i> Volver
                 </button>
                 
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Nueva Membresía</h2>
+                <h2 id="create-membership-title" class="text-2xl font-bold text-gray-800 mb-6">Nueva Membresía</h2>
                 
-                <form class="space-y-6">
+                <form id="create-membership-form" class="space-y-6">
+                    <input type="hidden" id="membership-doc-id">
                     <div class="bg-white shadow overflow-hidden rounded-lg p-6">
                         <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                             <div class="sm:col-span-6">
@@ -547,10 +429,10 @@
                     </div>
                     
                     <div class="flex justify-end">
-                        <button type="button" onclick="showScreen('membership-management-screen')" class="btn-primary bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
+                        <button type="button" id="cancel-membership-btn" class="btn-primary bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
                             Cancelar
                         </button>
-                        <button type="button" onclick="saveMembership()" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <button type="submit" id="save-membership-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Guardar Membresía
                         </button>
                     </div>
@@ -561,7 +443,7 @@
         <!-- User Profile Screen -->
         <div id="user-profile-screen" class="screen p-6">
             <div class="max-w-3xl mx-auto">
-                <button onclick="showScreen('welcome-screen')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                <button id="user-profile-logout-btn" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
                     <i class="fas fa-arrow-left mr-2"></i> Cerrar Sesión
                 </button>
                 
@@ -572,13 +454,13 @@
                     <div class="px-4 py-5 sm:p-6">
                         <div class="flex flex-col sm:flex-row items-center mb-8">
                             <div class="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
-                                <div class="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <div id="user-profile-initials" class="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center">
                                     <span class="text-indigo-600 text-2xl font-bold">JD</span>
                                 </div>
                             </div>
                             <div class="text-center sm:text-left">
-                                <h2 class="text-2xl font-bold text-gray-900">Juan Domínguez</h2>
-                                <p class="text-sm text-gray-500">juan@example.com</p>
+                                <h2 id="user-profile-name" class="text-2xl font-bold text-gray-900">Juan Domínguez</h2>
+                                <p id="user-profile-email" class="text-sm text-gray-500">juan@example.com</p>
                             </div>
                         </div>
                         
@@ -586,25 +468,15 @@
                             <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
                                 <div class="sm:col-span-1">
                                     <dt class="text-sm font-medium text-gray-500">Tipo de Membresía</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">Premium Anual</dd>
-                                </div>
-                                <div class="sm:col-span-1">
-                                    <dt class="text-sm font-medium text-gray-500">Fecha de Inicio</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">15/03/2023</dd>
+                                    <dd id="user-profile-membership" class="mt-1 text-sm text-gray-900">Premium Anual</dd>
                                 </div>
                                 <div class="sm:col-span-1">
                                     <dt class="text-sm font-medium text-gray-500">Fecha de Vencimiento</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">15/03/2024</dd>
-                                </div>
-                                <div class="sm:col-span-1">
-                                    <dt class="text-sm font-medium text-gray-500">Estado</dt>
-                                    <dd class="mt-1">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activa</span>
-                                    </dd>
+                                    <dd id="user-profile-expiration" class="mt-1 text-sm text-gray-900">15/03/2024</dd>
                                 </div>
                                 <div class="sm:col-span-2">
                                     <dt class="text-sm font-medium text-gray-500">Beneficios</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">
+                                    <dd id="user-profile-benefits" class="mt-1 text-sm text-gray-900">
                                         <ul class="list-disc pl-5 space-y-1">
                                             <li>Acceso ilimitado a todas las instalaciones</li>
                                             <li>Entrenador personal incluido (2 sesiones/mes)</li>
@@ -615,19 +487,6 @@
                                 </div>
                             </dl>
                         </div>
-                        
-                        <div class="mt-8 border-t border-gray-200 pt-5">
-                            <div class="flex justify-between items-center">
-                                <h3 class="text-lg font-medium text-gray-900">Próximo pago</h3>
-                                <span class="text-sm text-gray-500">15/03/2024</span>
-                            </div>
-                            <div class="mt-2">
-                                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                    <div class="bg-indigo-600 h-2.5 rounded-full" style="width: 75%"></div>
-                                </div>
-                                <p class="mt-1 text-sm text-gray-500">Tu membresía está activa. El próximo pago se realizará automáticamente.</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -635,107 +494,398 @@
     </div>
 
     <!-- Service Worker Registration -->
-    <script>
-      
-      // Configuración de Firebase
-  const firebaseConfig = {
-  apiKey: "AIzaSyAztb-kIE7Wj2VuZfE1LU-Pxra5dIrHyZg",
-  authDomain: "gymcontrol-7a4f7.firebaseapp.com",
-  projectId: "gymcontrol-7a4f7",
-  storageBucket: "gymcontrol-7a4f7.firebasestorage.app",
-  messagingSenderId: "493369866195",
-  appId: "1:493369866195:web:4b9b22081dbd4e860b6126",
-  measurementId: "G-WBX1EWBNBC"
-};
+    <script type="module">
+        // =================================================================
+        // CONEXIÓN A FIREBASE Y FIRESTORE
+        // =================================================================
+        // Importa los módulos necesarios de Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // Inicializar Firebase
-  firebase.initializeApp(firebaseConfig);
-  const analytics = firebase.analytics();
-      
-      
-        // Screen navigation
+        // CONFIGURACIÓN DE TU PROYECTO FIREBASE
+        // Reemplaza con tus credenciales de proyecto de Firebase.
+        const firebaseConfig = {
+            apiKey: "AIzaSyAztb-kIE7Wj2VuZfE1LU-Pxra5dIrHyZg",
+            authDomain: "gymcontrol-7a4f7.firebaseapp.com",
+            projectId: "gymcontrol-7a4f7",
+            storageBucket: "gymcontrol-7a4f7.firebasestorage.app",
+            messagingSenderId: "493369866195",
+            appId: "1:493369866195:web:4b9b22081dbd4e860b6126",
+            measurementId: "G-WBX1EWBNBC"
+        };
+        
+        // Inicializa Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // =================================================================
+        // FUNCIONES DE NAVEGACIÓN Y LÓGICA GENERAL
+        // =================================================================
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.style.display = 'none';
+                screen.classList.remove('active-screen'); // Asegurarse de remover la clase
             });
             document.getElementById(screenId).style.display = 'flex';
             document.getElementById(screenId).classList.add('active-screen');
-        }
-        
-        // Mock login function
-        function loginUser() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            if (email === 'admin@gympro.com' && password === 'admin123') {
-                document.getElementById('admin-navbar').style.display = 'block';
-                showScreen('admin-dashboard');
-            } else if (email && password) {
-                document.getElementById('admin-navbar').style.display = 'none';
-                showScreen('user-profile-screen');
-            } else {
-                alert('Por favor ingresa tus credenciales');
+
+            // Recargar datos al cambiar de pantalla si es necesario
+            if (screenId === 'admin-dashboard') {
+                fetchUsers();
+            } else if (screenId === 'membership-management-screen') {
+                fetchMemberships();
             }
         }
         
-        // Mock register function
-        function registerUser() {
+        // =================================================================
+        // AUTENTICACIÓN DE USUARIOS
+        // =================================================================
+        // Observa el estado de autenticación para cambiar de pantalla
+        onAuthStateChanged(auth, async (user) => {
+            const adminNavbar = document.getElementById('admin-navbar');
+            if (user) {
+                // Usuario logueado
+                const usersCollection = collection(db, "users");
+                const userQuery = await getDocs(usersCollection);
+                let userRole = 'user';
+                let userData = {};
+                userQuery.forEach(doc => {
+                    if (doc.data().uid === user.uid) {
+                        userData = doc.data();
+                        userRole = userData.role;
+                    }
+                });
+
+                if (userRole === 'admin') {
+                    adminNavbar.style.display = 'block';
+                    showScreen('admin-dashboard');
+                } else {
+                    adminNavbar.style.display = 'none';
+                    showScreen('user-profile-screen');
+                    // Rellenar perfil de usuario
+                    document.getElementById('user-profile-name').textContent = userData.name;
+                    document.getElementById('user-profile-email').textContent = userData.email;
+                    document.getElementById('user-profile-membership').textContent = userData.membership;
+                    document.getElementById('user-profile-expiration').textContent = userData.expiration ? userData.expiration.toDate().toLocaleDateString('es-ES') : 'N/A';
+                    document.getElementById('user-profile-initials').textContent = userData.name.substring(0, 2).toUpperCase();
+                }
+            } else {
+                // Usuario no logueado
+                adminNavbar.style.display = 'none';
+                showScreen('welcome-screen');
+            }
+        });
+        
+        // Funciones de login y registro
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert(`Error al iniciar sesión: ${error.message}`);
+            }
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
             const name = document.getElementById('register-name').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             
-            if (name && email && password) {
-                alert(`¡Bienvenido ${name}! Tu cuenta ha sido creada exitosamente.`);
+            if (!name || !email || !password) {
+                alert('Por favor completa todos los campos.');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                await addDoc(collection(db, "users"), {
+                    uid: user.uid,
+                    name: name,
+                    email: email,
+                    role: 'user',
+                    membership: 'Ninguna',
+                    expiration: null
+                });
+                alert(`¡Bienvenido ${name}! Tu cuenta ha sido creada exitosamente. Inicia sesión para continuar.`);
                 showScreen('login-screen');
+            } catch (error) {
+                alert(`Error al registrarse: ${error.message}`);
+            }
+        });
+
+        document.getElementById('google-login-btn').addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                alert('Error al iniciar sesión con Google.');
+            }
+        });
+
+        document.getElementById('google-register-btn').addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                // Verificar si el usuario ya existe en Firestore para evitar duplicados
+                const usersCollection = collection(db, "users");
+                const userQuery = await getDocs(usersCollection);
+                let userExists = false;
+                userQuery.forEach(doc => {
+                    if (doc.data().uid === user.uid) {
+                        userExists = true;
+                    }
+                });
+
+                if (!userExists) {
+                    await addDoc(collection(db, "users"), {
+                        uid: user.uid,
+                        name: user.displayName || '',
+                        email: user.email,
+                        role: 'user',
+                        membership: 'Ninguna',
+                        expiration: null
+                    });
+                }
+            } catch (error) {
+                alert('Error al iniciar sesión con Google.');
+            }
+        });
+        
+        // Función para cerrar sesión
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth);
+        });
+        document.getElementById('user-profile-logout-btn').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+
+        // =================================================================
+        // GESTIÓN DE USUARIOS
+        // =================================================================
+        async function fetchUsers() {
+            const usersTableBody = document.getElementById('users-table-body');
+            usersTableBody.innerHTML = '';
+            
+            const usersCollection = collection(db, "users");
+            const userSnapshot = await getDocs(usersCollection);
+            userSnapshot.forEach(doc => {
+                const user = doc.data();
+                const expirationDate = user.expiration ? user.expiration.toDate() : null;
+                const status = expirationDate && expirationDate > new Date() ? 'Activa' : 'Vencida';
+                const statusColor = status === 'Activa' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                
+                const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.uid}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <span class="text-indigo-600 font-medium">${user.name.substring(0, 2).toUpperCase()}</span>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${user.name}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.email}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.membership}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${status}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editUser('${doc.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteUser('${doc.id}')" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+                usersTableBody.innerHTML += row;
+            });
+        }
+        
+        async function saveUser(userId = null) {
+            const name = document.getElementById('user-name').value;
+            const email = document.getElementById('user-email').value;
+            const password = document.getElementById('user-password').value;
+            const membership = document.getElementById('user-membership').value;
+            const expiration = document.getElementById('user-expiration').value;
+            
+            // Lógica para guardar o actualizar el usuario
+            if (userId) {
+                const userRef = doc(db, "users", userId);
+                await updateDoc(userRef, {
+                    name: name,
+                    email: email,
+                    membership: membership,
+                    expiration: expiration ? new Date(expiration) : null
+                });
+                alert('Usuario actualizado exitosamente');
             } else {
-                alert('Por favor completa todos los campos');
+                // Lógica de registro para un nuevo usuario admin
+                // Nota: La creación de usuarios con contraseña solo debería hacerse desde el lado del cliente si es para usuarios finales
+                // Para admins, es mejor manejarlo desde la consola o una API
+                await addDoc(collection(db, "users"), {
+                    name: name,
+                    email: email,
+                    membership: membership,
+                    expiration: expiration ? new Date(expiration) : null,
+                    role: 'user' // Por defecto se crea un usuario normal
+                });
+                alert('Usuario creado exitosamente');
             }
+            showScreen('admin-dashboard');
+            fetchUsers();
         }
-        
-        // User ID counter
-        let userIdCounter = 3; // Starting after the existing 3 users
-        
-        // Mock user management functions
-        function editUser(id) {
-            alert(`Editar usuario con ID: ${id.toString().padStart(3, '0')}`);
+
+        async function editUser(userId) {
             showScreen('create-user-screen');
+            document.getElementById('create-user-title').textContent = 'Editar Usuario';
+            document.getElementById('user-doc-id').value = userId;
+            const userRef = doc(db, "users", userId);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                document.getElementById('user-name').value = userData.name;
+                document.getElementById('user-email').value = userData.email;
+                document.getElementById('user-membership').value = userData.membership;
+                document.getElementById('user-expiration').value = userData.expiration ? userData.expiration.toDate().toISOString().split('T')[0] : '';
+            } else {
+                alert("No se encontró el usuario.");
+            }
         }
         
-        function deleteUser(id) {
+        async function deleteUser(userId) {
             if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
-                alert(`Usuario con ID: ${id.toString().padStart(3, '0')} eliminado`);
+                await deleteDoc(doc(db, "users", userId));
+                alert('Usuario eliminado');
+                fetchUsers();
             }
         }
-        
-        function saveUser() {
-            userIdCounter++;
-            const newId = userIdCounter.toString().padStart(3, '0');
-            alert(`Usuario ${newId} guardado exitosamente`);
-            showScreen('admin-dashboard');
+
+        // =================================================================
+        // GESTIÓN DE MEMBRESÍAS
+        // =================================================================
+        async function fetchMemberships() {
+            const membershipsTableBody = document.getElementById('memberships-table-body');
+            membershipsTableBody.innerHTML = '';
+            
+            const membershipsCollection = collection(db, "memberships");
+            const membershipSnapshot = await getDocs(membershipsCollection);
+            membershipSnapshot.forEach(doc => {
+                const membership = doc.data();
+                const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${membership.name}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${membership.duration} meses</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${membership.price}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editMembership('${doc.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteMembership('${doc.id}')" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+                membershipsTableBody.innerHTML += row;
+            });
         }
         
-        function saveUser() {
-            alert('Usuario guardado exitosamente');
-            showScreen('admin-dashboard');
-        }
-        
-        // Mock membership management functions
-        function editMembership(id) {
-            alert(`Editar membresía con ID: ${id}`);
-            showScreen('create-membership-screen');
-        }
-        
-        function deleteMembership(id) {
-            if (confirm('¿Estás seguro de que quieres eliminar esta membresía?')) {
-                alert(`Membresía con ID: ${id} eliminada`);
+        async function saveMembership(membershipId = null) {
+            const name = document.getElementById('membership-name').value;
+            const duration = document.getElementById('membership-duration').value;
+            const price = document.getElementById('membership-price').value;
+            const description = document.getElementById('membership-description').value;
+
+            if (membershipId) {
+                const membershipRef = doc(db, "memberships", membershipId);
+                await updateDoc(membershipRef, { name, duration, price, description });
+                alert('Membresía actualizada exitosamente');
+            } else {
+                await addDoc(collection(db, "memberships"), { name, duration, price, description });
+                alert('Membresía creada exitosamente');
             }
-        }
-        
-        function saveMembership() {
-            alert('Membresía guardada exitosamente');
             showScreen('membership-management-screen');
+            fetchMemberships();
+        }
+
+        async function editMembership(membershipId) {
+            showScreen('create-membership-screen');
+            document.getElementById('create-membership-title').textContent = 'Editar Membresía';
+            document.getElementById('membership-doc-id').value = membershipId;
+            const membershipRef = doc(db, "memberships", membershipId);
+            const membershipSnap = await getDoc(membershipRef);
+            if (membershipSnap.exists()) {
+                const membershipData = membershipSnap.data();
+                document.getElementById('membership-name').value = membershipData.name;
+                document.getElementById('membership-duration').value = membershipData.duration;
+                document.getElementById('membership-price').value = membershipData.price;
+                document.getElementById('membership-description').value = membershipData.description;
+            } else {
+                alert("No se encontró la membresía.");
+            }
+        }
+
+        async function deleteMembership(membershipId) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta membresía?')) {
+                await deleteDoc(doc(db, "memberships", membershipId));
+                alert('Membresía eliminada');
+                fetchMemberships();
+            }
         }
         
+        // =================================================================
+        // MANEJO DE EVENTOS INICIALES
+        // =================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Navegación principal
+            document.getElementById('welcome-login-btn').addEventListener('click', () => showScreen('login-screen'));
+            document.getElementById('welcome-register-btn').addEventListener('click', () => showScreen('register-screen'));
+            document.getElementById('login-back-btn').addEventListener('click', () => showScreen('welcome-screen'));
+            document.getElementById('login-register-btn').addEventListener('click', () => showScreen('register-screen'));
+            document.getElementById('register-back-btn').addEventListener('click', () => showScreen('welcome-screen'));
+            document.getElementById('register-login-btn').addEventListener('click', () => showScreen('login-screen'));
+            document.getElementById('nav-users-btn').addEventListener('click', () => showScreen('admin-dashboard'));
+            document.getElementById('nav-memberships-btn').addEventListener('click', () => showScreen('membership-management-screen'));
+            document.getElementById('nav-access-btn').addEventListener('click', () => showScreen('access-control-screen'));
+            document.getElementById('nav-reports-btn').addEventListener('click', () => showScreen('reports-screen'));
+            document.getElementById('memberships-back-to-users-btn').addEventListener('click', () => showScreen('admin-dashboard'));
+            document.getElementById('access-back-btn').addEventListener('click', () => showScreen('admin-dashboard'));
+            document.getElementById('reports-back-btn').addEventListener('click', () => showScreen('admin-dashboard'));
+
+            // Gestión de usuarios
+            document.getElementById('add-user-btn').addEventListener('click', () => {
+                showScreen('create-user-screen');
+                document.getElementById('create-user-title').textContent = 'Agregar Nuevo Usuario';
+                document.getElementById('create-user-form').reset();
+            });
+            document.getElementById('cancel-user-btn').addEventListener('click', () => showScreen('admin-dashboard'));
+            document.getElementById('save-user-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                const userId = document.getElementById('user-doc-id').value;
+                saveUser(userId);
+            });
+            
+            // Gestión de membresías
+            document.getElementById('add-membership-btn').addEventListener('click', () => {
+                showScreen('create-membership-screen');
+                document.getElementById('create-membership-title').textContent = 'Nueva Membresía';
+                document.getElementById('create-membership-form').reset();
+            });
+            document.getElementById('cancel-membership-btn').addEventListener('click', () => showScreen('membership-management-screen'));
+            document.getElementById('save-membership-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                const membershipId = document.getElementById('membership-doc-id').value;
+                saveMembership(membershipId);
+            });
+        });
+
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -751,15 +901,9 @@
         let deferredPrompt;
         
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
-            // Stash the event so it can be triggered later.
             deferredPrompt = e;
-            // Update UI notify the user they can install the PWA
             console.log('PWA install prompt available');
-            
-            // You can show a custom install button here if you want
-            // For example: document.getElementById('installButton').style.display = 'block';
         });
     </script>
 </body>
