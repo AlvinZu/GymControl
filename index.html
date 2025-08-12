@@ -3,1715 +3,764 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymControl</title>
+    <title>GymPro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icons/Logo-gym-control-180x180.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="GymControl">
-    <link rel="apple-touch-startup-image" href="Logo-gym-control-180x180.png">
-
-    <!-- Firebase SDK -->
+    
+  
+  <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js"></script>
-
+  
+  <!-- Icono App -->
+    <link rel="icon" type="image/png" sizes="180x180" href="icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="500x500" href="icon-500x500.png">
+    <link rel="apple-touch-icon" href="/icon-180x180.png">
+    <link rel="manifest" href="manifest.json">
+  
     <style>
-        /* Estilos para el sidebar en pantallas pequeñas (oculto por defecto) */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%); /* Oculta el sidebar moviéndolo a la izquierda */
-                transition: transform 0.3s ease; /* Añade una transición suave para la animación */
-            }
-            .sidebar.active {
-                transform: translateX(0); /* Muestra el sidebar moviéndolo a su posición original */
-            }
+        /* Custom CSS for transitions and animations */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
         }
         
-        /* Animación de entrada gradual (fade-in) */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); } /* Inicia invisible y ligeramente abajo */
-            to { opacity: 1; transform: translateY(0); } /* Termina visible en su posición */
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        .animate-fadeIn {
-            animation: fadeIn 0.3s ease forwards; /* Aplica la animación con una duración de 0.3s */
+        .active-screen {
+            display: block;
         }
         
-        /* Estilos para la barra de desplazamiento personalizada (Webkit) */
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px; /* Ancho de la barra de desplazamiento */
+        .input-field {
+            transition: border-color 0.3s ease;
         }
         
-        .custom-scroll::-webkit-scrollbar-track {
-            background: #f1f1f1; /* Color de fondo de la pista de la barra de desplazamiento */
+        .input-field:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
         }
         
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #888; /* Color del "pulgar" de la barra de desplazamiento */
-            border-radius: 3px; /* Bordes redondeados para el pulgar */
+        .btn-primary {
+            transition: all 0.3s ease;
         }
         
-        .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #555; /* Color del pulgar al pasar el ratón por encima */
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
-    <div class="flex h-screen overflow-hidden">
-        <div class="sidebar bg-indigo-800 text-white w-64 fixed md:relative h-full z-10 hidden">
-    </div>
-            <div class="p-4 flex items-center justify-between border-b border-indigo-700">
-                <h1 class="text-xl font-bold">GymControl</h1>
-                <button id="closeSidebar" class="md:hidden">
-                    <i class="fas fa-times"></i>
-                </button>
+<body class="bg-gray-100 font-sans pb-16">
+    <!-- App Container -->
+    <div class="min-h-screen flex flex-col">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="screen active-screen flex flex-col items-center justify-center p-6 h-screen">
+            <div class="text-center max-w-md mx-auto">
+                <div class="mb-10">
+                    <i class="fas fa-dumbbell text-6xl text-indigo-600 mb-4"></i>
+                    <h1 class="text-4xl font-bold text-gray-800 mb-2">GymPro</h1>
+                    <p class="text-gray-600">Transforma tu cuerpo, transforma tu vida</p>
+                </div>
+                
+                <div class="space-y-4 mb-8">
+                    <p class="text-gray-700 text-lg">Bienvenido a tu gimnasio digital. Empieza tu viaje de fitness hoy mismo.</p>
+                </div>
+                
+                <div class="space-y-4 w-full">
+                    <button onclick="showScreen('login-screen')" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Iniciar Sesión
+                    </button>
+                    <button onclick="showScreen('register-screen')" class="btn-primary w-full bg-white text-indigo-600 py-3 px-4 rounded-lg font-medium border border-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Registrarse
+                    </button>
+                </div>
             </div>
-            <nav class="p-4">
-                <ul>
-                  <li class="mb-2">
-                        <a href="#" class="dashboard-btn flex items-center p-2 rounded hover:bg-indigo-700 transition">
-                            <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
-                        </a>
-                    </li>
-                  <li class="mb-2">
-                        <a href="#" class="checkin-btn flex items-center p-2 rounded hover:bg-indigo-700 transition">
-                            <i class="fas fa-door-open mr-2"></i> Registro Ingreso
-                        </a>
-                    </li>
+        </div>
+        
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen p-6 h-screen flex flex-col" style="display: none;">
+            <button onclick="showScreen('welcome-screen')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                <i class="fas fa-arrow-left mr-2"></i> Volver
+            </button>
+            
+            <div class="max-w-md mx-auto w-full">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Iniciar Sesión</h2>
+                
+                <form class="space-y-4">
+                    <div>
+                        <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                        <input type="email" id="login-email" class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="tu@email.com" required>
+                    </div>
                     
-                    <li class="mb-2">
-                        <a href="#" class="members-btn flex items-center p-2 rounded hover:bg-indigo-700 transition">
-                            <i class="fas fa-users mr-2"></i> Miembros
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="memberships-btn flex items-center p-2 rounded hover:bg-indigo-700 transition">
-                            <i class="fas fa-id-card mr-2"></i> Membresías
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="reports-btn flex items-center p-2 rounded hover:bg-indigo-700 transition">
-                            <i class="fas fa-chart-bar mr-2"></i> Reportes
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-indigo-700">
-                <button class="logout-btn w-full flex items-center justify-center p-2 rounded hover:bg-indigo-700 transition">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                    <div>
+                        <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                        <input type="password" id="login-password" class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••" required>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="remember-me" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                            <label for="remember-me" class="ml-2 block text-sm text-gray-700">Recordarme</label>
+                        </div>
+                        <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800">Olvidé mi contraseña</a>
+                    </div>
+                    
+                    <button type="button" onclick="loginUser()" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Iniciar Sesión
+                    </button>
+                    
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">O continúa con</span>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn-primary w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
+                        <i class="fab fa-google text-red-500 mr-2"></i> Acceder con Google
+                    </button>
+                    
+                    <div class="text-center text-sm text-gray-600">
+                        ¿No tienes una cuenta? <button onclick="showScreen('register-screen')" class="text-indigo-600 hover:text-indigo-800 font-medium">Regístrate</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Register Screen -->
+        <div id="register-screen" class="screen p-6 h-screen flex flex-col" style="display: none;">
+            <button onclick="showScreen('welcome-screen')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                <i class="fas fa-arrow-left mr-2"></i> Volver
+            </button>
+            
+            <div class="max-w-md mx-auto w-full">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Crear Cuenta</h2>
+                
+                <form class="space-y-4">
+                    <div>
+                        <label for="register-name" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                        <input type="text" id="register-name" class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Tu nombre" required>
+                    </div>
+                    
+                    <div>
+                        <label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                        <input type="email" id="register-email" class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="tu@email.com" required>
+                    </div>
+                    
+                    <div>
+                        <label for="register-password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                        <input type="password" id="register-password" class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••" required>
+                        <p class="mt-1 text-xs text-gray-500">Mínimo 8 caracteres con letras y números</p>
+                    </div>
+                    
+                    <button type="button" onclick="registerUser()" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Crear Cuenta
+                    </button>
+                    
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">O continúa con</span>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn-primary w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
+                        <i class="fab fa-google text-red-500 mr-2"></i> Acceder con Google
+                    </button>
+                    
+                    <div class="text-center text-sm text-gray-600">
+                        ¿Ya tienes una cuenta? <button onclick="showScreen('login-screen')" class="text-indigo-600 hover:text-indigo-800 font-medium">Inicia Sesión</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Admin Dashboard - User Management -->
+        <div id="admin-dashboard" class="screen p-6 flex flex-col">
+            <div class="max-w-7xl mx-auto flex-grow">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Usuarios</h2>
+                    <div class="flex space-x-4">
+                        <button onclick="showScreen('create-user-screen')" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
+                            <i class="fas fa-plus mr-2"></i> Agregar Usuario
+                        </button>
+                        <button onclick="showScreen('welcome-screen')" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="relative rounded-md shadow-sm max-w-md">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" id="user-search" class="input-field block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Buscar usuarios...">
+                    </div>
+                </div>
+                
+                <div class="bg-white shadow overflow-hidden rounded-lg">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correo Electrónico</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membresía</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">001</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                                <span class="text-indigo-600 font-medium">JD</span>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Juan Domínguez</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">juan@example.com</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Premium Anual</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activa</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="editUser(1)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                                        <button onclick="deleteUser(1)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">002</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <span class="text-blue-600 font-medium">MP</span>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">María Pérez</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">maria@example.com</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Básica Mensual</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Próximo a vencer</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="editUser(2)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                                        <button onclick="deleteUser(2)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">003</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                                                <span class="text-red-600 font-medium">CG</span>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Carlos Gómez</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">carlos@example.com</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Premium Anual</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Vencida</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="editUser(3)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                                        <button onclick="deleteUser(3)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-between items-center">
+                    <button onclick="showScreen('membership-management-screen')" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Gestionar Membresías
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Admin Navigation Bar -->
+        <div class="bg-white border-t border-gray-200 py-3 px-4 fixed bottom-0 left-0 right-0 shadow-lg" id="admin-navbar" style="display: none;">
+            <div class="flex justify-around max-w-md mx-auto">
+                <button onclick="showScreen('admin-dashboard')" class="flex flex-col items-center text-indigo-600">
+                    <i class="fas fa-users text-xl"></i>
+                    <span class="text-xs mt-1">Usuarios</span>
+                </button>
+                <button onclick="showScreen('membership-management-screen')" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+                    <i class="fas fa-id-card text-xl"></i>
+                    <span class="text-xs mt-1">Membresías</span>
+                </button>
+                <button onclick="showScreen('access-control-screen')" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+                    <i class="fas fa-door-open text-xl"></i>
+                    <span class="text-xs mt-1">Acceso</span>
+                </button>
+                <button onclick="showScreen('reports-screen')" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+                    <i class="fas fa-chart-bar text-xl"></i>
+                    <span class="text-xs mt-1">Reportes</span>
                 </button>
             </div>
         </div>
         
-        <div class="flex-1 overflow-auto custom-scroll">
-            <header class="bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10 hidden">
-                <button id="toggleSidebar" class="md:hidden">
-                    <i class="fas fa-bars text-indigo-800"></i>
+        <!-- Create/Edit User Screen -->
+        <div id="create-user-screen" class="screen p-6">
+            <div class="max-w-2xl mx-auto">
+                <button onclick="showScreen('admin-dashboard')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver
                 </button>
-                <div class="flex items-center">
-                    <div class="relative">
-                        <i class="fas fa-bell text-gray-500 mr-4 cursor-pointer"></i>
-                        <span class="absolute top-0 right-3 w-2 h-2 bg-red-500 rounded-full"></span> </div>
-                    <div class="flex items-center">
-                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="w-8 h-8 rounded-full mr-2">
-                        <span class="text-sm font-medium">Admin</span>
+                
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Agregar Nuevo Usuario</h2>
+                
+                <form class="space-y-6">
+                    <div class="bg-white shadow overflow-hidden rounded-lg p-6">
+                        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                            <div class="sm:col-span-3">
+                                <label for="user-name" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+                                <input type="text" id="user-name" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            
+                            <div class="sm:col-span-3">
+                                <label for="user-email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                                <input type="email" id="user-email" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            
+                            <div class="sm:col-span-3">
+                                <label for="user-password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                                <input type="password" id="user-password" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            
+                            <div class="sm:col-span-3">
+                                <label for="user-membership" class="block text-sm font-medium text-gray-700">Tipo de Membresía</label>
+                                <select id="user-membership" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <option value="1">Básica Mensual - $30</option>
+                                    <option value="2">Premium Mensual - $50</option>
+                                    <option value="3">Básica Anual - $300</option>
+                                    <option value="4">Premium Anual - $500</option>
+                                </select>
+                            </div>
+                            
+                            <div class="sm:col-span-3">
+                                <label for="user-expiration" class="block text-sm font-medium text-gray-700">Fecha de Vencimiento</label>
+                                <input type="date" id="user-expiration" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button type="button" onclick="showScreen('admin-dashboard')" class="btn-primary bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
+                            Cancelar
+                        </button>
+                        <button type="button" onclick="saveUser()" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Guardar Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Membership Management Screen -->
+        <div id="membership-management-screen" class="screen p-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Membresías</h2>
+                    <div class="flex space-x-4">
+                        <button onclick="showScreen('create-membership-screen')" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
+                            <i class="fas fa-plus mr-2"></i> Nueva Membresía
+                        </button>
+                        <button onclick="showScreen('admin-dashboard')" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            Volver a Usuarios
+                        </button>
                     </div>
                 </div>
-            </header>
-            
-            <main class="p-4 hidden">
-              <div id="checkin-content" class="content-section hidden">
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">Registro de Ingreso</h2>
+                
+                <div class="bg-white shadow overflow-hidden rounded-lg">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre del Plan</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duración</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">Básica Mensual</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1 mes</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$30.00</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="editMembership(1)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                                        <button onclick="deleteMembership(1)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">Premium Mensual</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1 mes</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$50.00</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="editMembership(2)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                                        <button onclick="deleteMembership(2)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">Básica Anual</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12 meses</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$300.00</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="editMembership(3)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                                        <button onclick="deleteMembership(3)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">Premium Anual</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12 meses</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$500.00</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="editMembership(4)" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                                        <button onclick="deleteMembership(4)" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Access Control Screen -->
+        <div id="access-control-screen" class="screen p-6">
+            <div class="max-w-7xl mx-auto">
+                <button onclick="showScreen('admin-dashboard')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver
+                </button>
+                
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Control de Acceso</h2>
+                
+                <div class="bg-white shadow overflow-hidden rounded-lg p-6">
+                    <p class="text-gray-700">Pantalla de control de acceso al gimnasio.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Screen -->
+        <div id="reports-screen" class="screen p-6">
+            <div class="max-w-7xl mx-auto">
+                <button onclick="showScreen('admin-dashboard')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver
+                </button>
+                
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Reportes</h2>
+                
+                <div class="bg-white shadow overflow-hidden rounded-lg p-6">
+                    <p class="text-gray-700">Pantalla de reportes y estadísticas.</p>
+                </div>
+            </div>
+        </div>
 
-                    <div class="bg-white p-6 rounded-lg shadow mb-6">
-                        <h3 class="text-lg font-semibold mb-4">Buscar Cliente</h3>
-                        <div class="flex flex-col sm:flex-row gap-4 items-end">
-                            <div class="flex-1 w-full">
-                                <label for="client-search-input" class="block text-sm font-medium text-gray-700 mb-1">Nombre o ID del cliente</label>
-                                <input type="text" id="client-search-input" placeholder="Ej. Juan Pérez o 001" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <!-- Create/Edit Membership Screen -->
+        <div id="create-membership-screen" class="screen p-6">
+            <div class="max-w-2xl mx-auto">
+                <button onclick="showScreen('membership-management-screen')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver
+                </button>
+                
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Nueva Membresía</h2>
+                
+                <form class="space-y-6">
+                    <div class="bg-white shadow overflow-hidden rounded-lg p-6">
+                        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                            <div class="sm:col-span-6">
+                                <label for="membership-name" class="block text-sm font-medium text-gray-700">Nombre del Plan</label>
+                                <input type="text" id="membership-name" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             </div>
-                            <button id="search-client-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center w-full sm:w-auto">
-                                <i class="fas fa-search mr-2"></i> Buscar
-                            </button>
+                            
+                            <div class="sm:col-span-3">
+                                <label for="membership-duration" class="block text-sm font-medium text-gray-700">Duración (meses)</label>
+                                <input type="number" id="membership-duration" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            
+                            <div class="sm:col-span-3">
+                                <label for="membership-price" class="block text-sm font-medium text-gray-700">Precio ($)</label>
+                                <input type="number" step="0.01" id="membership-price" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            
+                            <div class="sm:col-span-6">
+                                <label for="membership-description" class="block text-sm font-medium text-gray-700">Descripción</label>
+                                <textarea id="membership-description" rows="3" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                            </div>
                         </div>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button type="button" onclick="showScreen('membership-management-screen')" class="btn-primary bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
+                            Cancelar
+                        </button>
+                        <button type="button" onclick="saveMembership()" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Guardar Membresía
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- User Profile Screen -->
+        <div id="user-profile-screen" class="screen p-6">
+            <div class="max-w-3xl mx-auto">
+                <button onclick="showScreen('welcome-screen')" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                    <i class="fas fa-arrow-left mr-2"></i> Cerrar Sesión
+                </button>
+                
+                <div class="bg-white shadow overflow-hidden rounded-lg">
+                    <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Mi Perfil</h3>
+                    </div>
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex flex-col sm:flex-row items-center mb-8">
+                            <div class="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
+                                <div class="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <span class="text-indigo-600 text-2xl font-bold">JD</span>
+                                </div>
+                            </div>
+                            <div class="text-center sm:text-left">
+                                <h2 class="text-2xl font-bold text-gray-900">Juan Domínguez</h2>
+                                <p class="text-sm text-gray-500">juan@example.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-5">
+                            <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                                <div class="sm:col-span-1">
+                                    <dt class="text-sm font-medium text-gray-500">Tipo de Membresía</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">Premium Anual</dd>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <dt class="text-sm font-medium text-gray-500">Fecha de Inicio</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">15/03/2023</dd>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <dt class="text-sm font-medium text-gray-500">Fecha de Vencimiento</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">15/03/2024</dd>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <dt class="text-sm font-medium text-gray-500">Estado</dt>
+                                    <dd class="mt-1">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activa</span>
+                                    </dd>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <dt class="text-sm font-medium text-gray-500">Beneficios</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            <li>Acceso ilimitado a todas las instalaciones</li>
+                                            <li>Entrenador personal incluido (2 sesiones/mes)</li>
+                                            <li>Acceso a clases grupales premium</li>
+                                            <li>Uso ilimitado de sauna y jacuzzi</li>
+                                        </ul>
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+                        
+                        <div class="mt-8 border-t border-gray-200 pt-5">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-medium text-gray-900">Próximo pago</h3>
+                                <span class="text-sm text-gray-500">15/03/2024</span>
+                            </div>
+                            <div class="mt-2">
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-indigo-600 h-2.5 rounded-full" style="width: 75%"></div>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-500">Tu membresía está activa. El próximo pago se realizará automáticamente.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                        <div id="client-status-area" class="mt-6 p-4 border rounded-lg hidden">
-                            <p id="client-status-message" class="text-lg font-semibold"></p>
-                            <p id="client-details" class="text-gray-600 text-sm mt-2"></p>
-                            <button id="grant-access-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition mt-4 hidden">
-                                <i class="fas fa-check-circle mr-2"></i> Dar Acceso
-                            </button>
-                            <button id="charge-membership-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition mt-4 hidden">
-                                <i class="fas fa-dollar-sign mr-2"></i> Cobrar Membresía
-                            </button>
-                        </div>
-                    </div>
-                </div>
-              
-                <div id="dashboard-content" class="content-section">
-                    <div class="mb-6 flex items-center justify-between">
-                        <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
-                        <div class="text-sm text-gray-500">Hoy: <span id="current-date"></span></div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-white p-4 rounded-lg shadow">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500">Miembros activos</p>
-                                    <h3 class="text-2xl font-bold">248</h3>
-                                </div>
-                                <div class="bg-indigo-100 p-3 rounded-full">
-                                    <i class="fas fa-users text-indigo-600"></i>
-                                </div>
-                            </div>
-                            <div class="mt-2 text-sm text-green-500">
-                                <i class="fas fa-arrow-up mr-1"></i> 12% desde ayer
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white p-4 rounded-lg shadow">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500">Membresías activas</p>
-                                    <h3 class="text-2xl font-bold">312</h3>
-                                </div>
-                                <div class="bg-green-100 p-3 rounded-full">
-                                    <i class="fas fa-id-card text-green-600"></i>
-                                </div>
-                            </div>
-                            <div class="mt-2 text-sm text-green-500">
-                                <i class="fas fa-arrow-up mr-1"></i> 5% desde ayer
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white p-4 rounded-lg shadow">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500">Vencen hoy</p>
-                                    <h3 class="text-2xl font-bold">8</h3>
-                                </div>
-                                <div class="bg-yellow-100 p-3 rounded-full">
-                                    <i class="fas fa-exclamation text-yellow-600"></i>
-                                </div>
-                            </div>
-                            <div class="mt-2 text-sm text-red-500">
-                                <i class="fas fa-arrow-down mr-1"></i> 2 desde ayer
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white p-4 rounded-lg shadow">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500">Ingresos mensuales</p>
-                                    <h3 class="text-2xl font-bold">$12,450</h3>
-                                </div>
-                                <div class="bg-blue-100 p-3 rounded-full">
-                                    <i class="fas fa-dollar-sign text-blue-600"></i>
-                                </div>
-                            </div>
-                            <div class="mt-2 text-sm text-green-500">
-                                <i class="fas fa-arrow-up mr-1"></i> 8% desde ayer
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                        <div class="bg-white p-4 rounded-lg shadow">
-                            <h3 class="font-bold mb-4">Miembros recientes</h3>
-                            <div class="overflow-auto">
-                                <table class="w-full">
-                                    <thead>
-                                        <tr class="text-left text-gray-500 border-b">
-                                            <th class="pb-2">Nombre</th>
-                                            <th class="pb-2">Fecha registro</th>
-                                            <th class="pb-2">Membresía</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="border-b">
-                                            <td class="py-3">Juan Pérez</td>
-                                            <td class="py-3">15/06/2023</td>
-                                            <td class="py-3"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Premium</span></td>
-                                        </tr>
-                                        <tr class="border-b">
-                                            <td class="py-3">María Gómez</td>
-                                            <td class="py-3">14/06/2023</td>
-                                            <td class="py-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Estándar</span></td>
-                                        </tr>
-                                        <tr class="border-b">
-                                            <td class="py-3">Carlos Ruiz</td>
-                                            <td class="py-3">13/06/2023</td>
-                                            <td class="py-3"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">VIP</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="py-3">Ana López</td>
-                                            <td class="py-3">12/06/2023</td>
-                                            <td class="py-3"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Básica</span></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white p-4 rounded-lg shadow">
-                            <h3 class="font-bold mb-4">Membresías que vencen</h3>
-                            <div class="overflow-auto">
-                                <table class="w-full">
-                                    <thead>
-                                        <tr class="text-left text-gray-500 border-b">
-                                            <th class="pb-2">Miembro</th>
-                                            <th class="pb-2">Vence</th>
-                                            <th class="pb-2">Días restantes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="border-b">
-                                            <td class="py-3">Luis Martínez</td>
-                                            <td class="py-3">18/06/2023</td>
-                                            <td class="py-3"><span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">3 días</span></td>
-                                        </tr>
-                                        <tr class="border-b">
-                                            <td class="py-3">Sofía Ramírez</td>
-                                            <td class="py-3">19/06/2023</td>
-                                            <td class="py-3"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">4 días</span></td>
-                                        </tr>
-                                        <tr class="border-b">
-                                            <td class="py-3">Pedro Sánchez</td>
-                                            <td class="py-3">20/06/2023</td>
-                                            <td class="py-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">5 días</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="py-3">Laura Díaz</td>
-                                            <td class="py-3">21/06/2023</td>
-                                            <td class="py-3"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">6 días</span></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="members-content" class="content-section hidden">
-                    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Gestión de Miembros</h2>
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <div class="relative">
-                                <input type="text" placeholder="Buscar miembro..." class="pl-8 pr-4 py-2 border rounded-lg w-full">
-                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                            </div>
-                            <button id="add-member-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center">
-                                <i class="fas fa-plus mr-2"></i> Nuevo Miembro
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-                        <div class="overflow-auto custom-scroll">
-                            <table class="w-full">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membresía</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10">
-                                                    <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/men/1.jpg" alt="">
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">Juan Pérez</div>
-                                                    <div class="text-sm text-gray-500">ID: MEM001</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">555-123-4567</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">juan@example.com</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Premium</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activo</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button class="edit-member-btn text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                            <button class="delete-member-btn text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10">
-                                                    <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/women/2.jpg" alt="">
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">María Gómez</div>
-                                                    <div class="text-sm text-gray-500">ID: MEM002</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">555-234-5678</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">maria@example.com</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Estándar</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activo</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button class="edit-member-btn text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                            <button class="delete-member-btn text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10">
-                                                    <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/men/3.jpg" alt="">
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">Carlos Ruiz</div>
-                                                    <div class="text-sm text-gray-500">ID: MEM003</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">555-345-6789</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">carlos@example.com</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">VIP</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activo</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button class="edit-member-btn text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                            <button class="delete-member-btn text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10">
-                                                    <img class="h-10 w-10 rounded-full" src="https://randomuser.me/api/portraits/women/4.jpg" alt="">
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">Ana López</div>
-                                                    <div class="text-sm text-gray-500">ID: MEM004</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">555-456-7890</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">ana@example.com</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Básica</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactivo</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button class="edit-member-btn text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                                            <button class="delete-member-btn text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="memberships-content" class="content-section hidden">
-                    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Gestión de Membresías</h2>
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <div class="relative">
-                                <input type="text" placeholder="Buscar membresía..." class="pl-8 pr-4 py-2 border rounded-lg w-full">
-                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                            </div>
-                            <button id="add-membership-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center">
-                                <i class="fas fa-plus mr-2"></i> Nueva Membresía
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div class="bg-white rounded-lg shadow overflow-hidden border-t-4 border-indigo-500">
-                            <div class="p-6">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="text-xl font-bold text-gray-800">Premium</h3>
-                                        <p class="text-gray-600 mt-1">Acceso ilimitado + Entrenador</p>
-                                    </div>
-                                    <span class="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">Más popular</span>
-                                </div>
-                                <div class="mt-4">
-                                    <span class="text-3xl font-bold">$99</span>
-                                    <span class="text-gray-500">/mes</span>
-                                </div>
-                                <ul class="mt-4 space-y-2">
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Acceso 24/7</span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Entrenador personal</span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Clases grupales incluidas</span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Sauna y jacuzzi</span>
-                                    </li>
-                                </ul>
-                                <div class="mt-6 flex space-x-2">
-                                    <button class="edit-membership-btn bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex-1">
-                                        <i class="fas fa-edit mr-2"></i> Editar
-                                    </button>
-                                    <button class="delete-membership-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-lg shadow overflow-hidden border-t-4 border-blue-500">
-                            <div class="p-6">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="text-xl font-bold text-gray-800">Estándar</h3>
-                                        <p class="text-gray-600 mt-1">Acceso ilimitado</p>
-                                    </div>
-                                </div>
-                                <div class="mt-4">
-                                    <span class="text-3xl font-bold">$69</span>
-                                    <span class="text-gray-500">/mes</span>
-                                </div>
-                                <ul class="mt-4 space-y-2">
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Acceso 6am-10pm</span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Clases grupales incluidas</span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Área de pesas</span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Cardio</span>
-                                    </li>
-                                </ul>
-                                <div class="mt-6 flex space-x-2">
-                                    <button class="edit-membership-btn bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex-1">
-                                        <i class="fas fa-edit mr-2"></i> Editar
-                                    </button>
-                                    <button class="delete-membership-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-lg shadow overflow-hidden border-t-4 border-yellow-500">
-                            <div class="p-6">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="text-xl font-bold text-gray-800">Básica</h3>
-                                        <p class="text-gray-600 mt-1">Acceso limitado</p>
-                                    </div>
-                                </div>
-                                <div class="mt-4">
-                                    <span class="text-3xl font-bold">$49</span>
-                                    <span class="text-gray-500">/mes</span>
-                                </div>
-                                <ul class="mt-4 space-y-2">
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Acceso 9am-9pm</span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Área de pesas</span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <i class="fas fa-check text-green-500 mr-2"></i>
-                                        <span>Cardio</span>
-                                    </li>
-                                    <li class="flex items-center text-gray-400">
-                                        <i class="fas fa-times mr-2"></i>
-                                        <span>Clases grupales</span>
-                                    </li>
-                                </ul>
-                                <div class="mt-6 flex space-x-2">
-                                    <button class="edit-membership-btn bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex-1">
-                                        <i class="fas fa-edit mr-2"></i> Editar
-                                    </button>
-                                    <button class="delete-membership-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="reports-content" class="content-section hidden">
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">Reportes y Estadísticas</h2>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                        <div class="bg-white p-6 rounded-lg shadow">
-                            <h3 class="text-lg font-semibold mb-4">Ingresos mensuales</h3>
-                            <div class="h-64">
-                                <canvas id="incomeChart"></canvas> </div>
-                        </div>
-                        
-                        <div class="bg-white p-6 rounded-lg shadow">
-                            <h3 class="text-lg font-semibold mb-4">Distribución de membresías</h3>
-                            <div class="h-64">
-                                <canvas id="membershipDistributionChart"></canvas> </div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white p-6 rounded-lg shadow">
-                        <h3 class="text-lg font-semibold mb-4">Registro de nuevos miembros</h3>
-                        <div class="h-96">
-                            <canvas id="newMembersChart"></canvas> </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-  
-  
-    
-    <div id="member-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md animate-fadeIn flex flex-col max-h-[90vh]">
-        <div class="flex justify-between items-center border-b px-6 py-4">
-            <h3 class="text-lg font-semibold" id="member-modal-title">Nuevo Miembro</h3>
-            <button id="close-member-modal" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6 flex-1 overflow-y-auto custom-scroll">
-            <form id="member-form">
-                <input type="hidden" id="member-id"> <div class="mb-4">
-                    <label for="member-name" class="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
-                    <input type="text" id="member-name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="mb-4">
-                    <label for="member-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" id="member-email" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="mb-4">
-                    <label for="member-phone" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                    <input type="tel" id="member-phone" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="mb-4">
-                    <label for="member-address" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-                    <textarea id="member-address" rows="2" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="member-birthdate" class="block text-sm font-medium text-gray-700 mb-1">Fecha de nacimiento</label>
-                    <input type="date" id="member-birthdate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="mb-4">
-                    <label for="member-gender" class="block text-sm font-medium text-gray-700 mb-1">Género</label>
-                    <select id="member-gender" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="">Seleccionar</option>
-                        <option value="male">Masculino</option>
-                        <option value="female">Femenino</option>
-                        <option value="other">Otro</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label for="member-photo" class="block text-sm font-medium text-gray-700 mb-1">Foto</label>
-                    <div class="flex items-center">
-                        <div class="mr-4">
-                            <img id="member-photo-preview" src="https://via.placeholder.com/100" alt="Foto" class="w-16 h-16 rounded-full object-cover">
-                        </div>
-                        <div class="flex-1">
-                            <input type="file" id="member-photo" class="hidden" accept="image/*"> <button type="button" id="upload-photo-btn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
-                                <i class="fas fa-upload mr-2"></i> Subir foto
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="flex justify-end border-t px-6 py-4">
-            <button id="cancel-member-btn" class="px-4 py-2 text-gray-600 hover:text-gray-800 mr-2">Cancelar</button>
-            <button id="save-member-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Guardar</button>
-        </div>
-    </div>
-</div>
-    
-  
-    <div id="membership-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md animate-fadeIn flex flex-col max-h-[90vh]">
-        <div class="flex justify-between items-center border-b px-6 py-4">
-            <h3 class="text-lg font-semibold" id="membership-modal-title">Nueva Membresía</h3>
-            <button id="close-membership-modal" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6 flex-1 overflow-y-auto custom-scroll">
-            <form id="membership-form">
-                <input type="hidden" id="membership-id"> <div class="mb-4">
-                    <label for="membership-name" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                    <input type="text" id="membership-name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="mb-4">
-                    <label for="membership-description" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                    <textarea id="membership-description" rows="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="membership-price" class="block text-sm font-medium text-gray-700 mb-1">Precio mensual</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2">$</span>
-                        <input type="number" id="membership-price" class="w-full pl-8 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <label for="membership-duration" class="block text-sm font-medium text-gray-700 mb-1">Duración (días)</label>
-                    <input type="number" id="membership-duration" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Beneficios</label>
-                    <div class="space-y-2">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="benefit-24" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                            <label for="benefit-24" class="ml-2 text-sm text-gray-700">Acceso 24/7</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="benefit-trainer" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                            <label for="benefit-trainer" class="ml-2 text-sm text-gray-700">Entrenador personal</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="benefit-classes" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                            <label for="benefit-classes" class="ml-2 text-sm text-gray-700">Clases grupales</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="benefit-sauna" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                            <label for="benefit-sauna" class="ml-2 text-sm text-gray-700">Sauna y jacuzzi</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="benefit-locker" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                            <label for="benefit-locker" class="ml-2 text-sm text-gray-700">Casillero personal</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <label for="membership-color" class="block text-sm font-medium text-gray-700 mb-1">Color identificador</label>
-                    <select id="membership-color" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="indigo">Indigo</option>
-                        <option value="blue">Azul</option>
-                        <option value="green">Verde</option>
-                        <option value="yellow">Amarillo</option>
-                        <option value="purple">Morado</option>
-                        <option value="pink">Rosa</option>
-                    </select>
-                </div>
-            </form>
-        </div>
-        <div class="flex justify-end border-t px-6 py-4">
-            <button id="cancel-membership-btn" class="px-4 py-2 text-gray-600 hover:text-gray-800 mr-2">Cancelar</button>
-            <button id="save-membership-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Guardar</button>
-        </div>
-    </div>
-</div>
-  
-    
-    <div id="assign-membership-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md animate-fadeIn flex flex-col max-h-[90vh]">
-        <div class="flex justify-between items-center border-b px-6 py-4">
-            <h3 class="text-lg font-semibold">Asignar Membresía</h3>
-            <button id="close-assign-membership-modal" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6 flex-1 overflow-y-auto custom-scroll">
-            <form id="assign-membership-form">
-                <input type="hidden" id="assign-member-id"> <div class="mb-4">
-                    <label for="select-membership" class="block text-sm font-medium text-gray-700 mb-1">Membresía</label>
-                    <select id="select-membership" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="">Seleccionar membresía</option>
-                        <option value="1">Premium ($99/mes)</option>
-                        <option value="2">Estándar ($69/mes)</option>
-                        <option value="3">Básica ($49/mes)</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label for="membership-start-date" class="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
-                    <input type="date" id="membership-start-date" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="mb-4">
-                    <label for="payment-method" class="block text-sm font-medium text-gray-700 mb-1">Método de pago</label>
-                    <select id="payment-method" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="cash">Efectivo</option>
-                        <option value="credit">Tarjeta de crédito</option>
-                        <option value="debit">Tarjeta de débito</option>
-                        <option value="transfer">Transferencia bancaria</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label for="payment-status" class="block text-sm font-medium text-gray-700 mb-1">Estado del pago</label>
-                    <select id="payment-status" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="paid">Pagado</option>
-                        <option value="pending">Pendiente</option>
-                        <option value="partial">Pago parcial</option>
-                    </select>
-                </div>
-            </form>
-        </div>
-        <div class="flex justify-end border-t px-6 py-4">
-            <button id="cancel-assign-membership-btn" class="px-4 py-2 text-gray-600 hover:text-gray-800 mr-2">Cancelar</button>
-            <button id="save-assign-membership-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Asignar</button>
-        </div>
-    </div>
-</div>
-  
-    
-    <div id="confirm-delete-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md animate-fadeIn flex flex-col max-h-[90vh]">
-        <div class="flex justify-between items-center border-b px-6 py-4">
-            <h3 class="text-lg font-semibold" id="confirm-delete-title">Confirmar eliminación</h3>
-            <button id="close-confirm-delete-modal" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6 flex-1 overflow-y-auto custom-scroll">
-            <p id="confirm-delete-message">¿Estás seguro que deseas eliminar este elemento?</p>
-        </div>
-        <div class="flex justify-end border-t px-6 py-4">
-            <button id="cancel-delete-btn" class="px-4 py-2 text-gray-600 hover:text-gray-800 mr-2">Cancelar</button>
-            <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Eliminar</button>
-        </div>
-    </div>
-</div>
-  
-    
-    <div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden z-50">
-        <div class="flex items-center">
-            <i class="fas fa-check-circle mr-2"></i>
-            <span id="notification-message">Operación realizada con éxito</span>
-        </div>
-    </div>
-    
-  
-  
+    <!-- Service Worker Registration -->
     <script>
       
-      // Importa los módulos necesarios de Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+      // Configuración de Firebase
+  const firebaseConfig = {
+  apiKey: "AIzaSyAztb-kIE7Wj2VuZfE1LU-Pxra5dIrHyZg",
+  authDomain: "gymcontrol-7a4f7.firebaseapp.com",
+  projectId: "gymcontrol-7a4f7",
+  storageBucket: "gymcontrol-7a4f7.firebasestorage.app",
+  messagingSenderId: "493369866195",
+  appId: "1:493369866195:web:4b9b22081dbd4e860b6126",
+  measurementId: "G-WBX1EWBNBC"
+};
 
-    // TU CONFIGURACIÓN DE FIREBASE
-    const firebaseConfig = {
-    apiKey: "AIzaSyAztb-kIE7Wj2VuZfE1LU-Pxra5dIrHyZg",
-    authDomain: "gymcontrol-7a4f7.firebaseapp.com",
-    projectId: "gymcontrol-7a4f7",
-    storageBucket: "gymcontrol-7a4f7.firebasestorage.app",
-    messagingSenderId: "493369866195",
-    appId: "1:493369866195:web:4b9b22081dbd4e860b6126",
-    measurementId: "G-WBX1EWBNBC"
-  };
-
-    // Inicializa Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const analytics = getAnalytics(app);
+  // Inicializar Firebase
+  firebase.initializeApp(firebaseConfig);
+  const analytics = firebase.analytics();
       
       
-        // =================================================================
-        // CONFIGURACIÓN DE TAILWIND CSS
-        // =================================================================
-        // Personaliza los colores de Tailwind para incluir tonos de índigo adicionales.
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        indigo: {
-                            100: '#e0e7ff',
-                            200: '#c7d2fe',
-                            300: '#a5b4fc',
-                            400: '#818cf8',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            800: '#3730a3',
-                            900: '#312e81',
-                        }
-                    }
-                }
-            }
+        // Screen navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.style.display = 'none';
+            });
+            document.getElementById(screenId).style.display = 'flex';
+            document.getElementById(screenId).classList.add('active-screen');
         }
         
-        // =================================================================
-        // VARIABLES GLOBALES
-        // =================================================================
-        // Variables para almacenar los IDs de los elementos actualmente en edición o eliminación.
-        let currentMemberId = null;
-        let currentMembershipId = null;
-        // Callback a ejecutar cuando se confirma una eliminación.
-        let deleteCallback = null;
-        
-        // =================================================================
-        // INICIALIZACIÓN DE LA APLICACIÓN
-        // =================================================================
-        // Se ejecuta cuando el DOM (estructura HTML) está completamente cargado.
-        document.addEventListener('DOMContentLoaded', function() {
-            // Muestra la fecha actual en el dashboard.
-            const today = new Date();
-            document.getElementById('current-date').textContent = today.toLocaleDateString('es-ES', {
-                weekday: 'long', // Nombre completo del día de la semana
-                year: 'numeric', // Año numérico (ej. 2023)
-                month: 'long', // Nombre completo del mes (ej. "junio")
-                day: 'numeric' // Día del mes (ej. 17)
-            });
+        // Mock login function
+        function loginUser() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
             
-            // Asigna eventos de click a los botones de navegación del sidebar.
-            // **MODIFICACIÓN AQUÍ:** Añadimos el cierre del sidebar al seleccionar una opción.
-            document.querySelector('.dashboard-btn').addEventListener('click', function() {
-                showDashboard();
-                closeSidebar(); // Cierra el sidebar después de seleccionar.
-            });
-            document.querySelector('.members-btn').addEventListener('click', function() {
-                showMembers();
-                closeSidebar(); // Cierra el sidebar después de seleccionar.
-            });
-            document.querySelector('.memberships-btn').addEventListener('click', function() {
-                showMemberships();
-                closeSidebar(); // Cierra el sidebar después de seleccionar.
-            });
-            document.querySelector('.reports-btn').addEventListener('click', function() {
-                showReports();
-                closeSidebar(); // Cierra el sidebar después de seleccionar.
-            });
-        document.querySelector('.checkin-btn').addEventListener('click', function() {
-                showCheckIn();
-                closeSidebar(); // Cierra el sidebar después de seleccionar.
-            });
-            
-            // Muestra el dashboard por defecto al cargar la página.
-            showDashboard();
-            
-            // =================================================================
-            // MANEJO DEL SIDEBAR EN DISPOSITIVOS MÓVILES
-            // =================================================================
-            // Abre el sidebar cuando se hace click en el botón de "hamburguesa".
-            document.getElementById('toggleSidebar').addEventListener('click', function() {
-                document.querySelector('.sidebar').classList.add('active');                          // Añade la clase 'active' para mostrarlo.
-            });
-            
-            // Cierra el sidebar cuando se hace click en el botón de cerrar (X).
-            document.getElementById('closeSidebar').addEventListener('click', closeSidebar); // Uso directo de la función
-            
-            // =================================================================
-            // MANEJO DE EVENTOS PARA MIEMBROS
-            // =================================================================
-            // Abre el modal para añadir un nuevo miembro.
-            document.getElementById('add-member-btn').addEventListener('click', function() {
-                openMemberModal('Nuevo Miembro');
-            });
-            
-            // Asigna eventos de click a todos los botones de "Editar Miembro".
-            document.querySelectorAll('.edit-member-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Simula la carga de datos de un miembro para la edición.
-                    const member = {
-                        id: 'MEM001',
-                        name: 'Juan Pérez',
-                        email: 'juan@example.com',
-                        phone: '555-123-4567',
-                        address: 'Calle Falsa 123, Ciudad',
-                        birthdate: '1990-01-15',
-                        gender: 'male',
-                        photo: 'https://randomuser.me/api/portraits/men/1.jpg'
-                    };
-                    openMemberModal('Editar Miembro', member); // Abre el modal con los datos del miembro.
-                });
-            });
-            
-            // Asigna eventos de click a todos los botones de "Eliminar Miembro".
-            document.querySelectorAll('.delete-member-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    currentMemberId = 'MEM001'; // Guarda el ID del miembro a eliminar (simulado).
-                    // Muestra el modal de confirmación de eliminación.
-                    showConfirmDelete('Eliminar miembro', '¿Estás seguro que deseas eliminar este miembro?', function() {
-                        showNotification('Miembro eliminado correctamente'); // Muestra notificación al confirmar.
-                    });
-                });
-            });
-            
-            // =================================================================
-            // MANEJO DE EVENTOS PARA MEMBRESÍAS
-            // =================================================================
-            // Abre el modal para añadir una nueva membresía.
-            document.getElementById('add-membership-btn').addEventListener('click', function() {
-                openMembershipModal('Nueva Membresía');
-            });
-            
-            // Asigna eventos de click a todos los botones de "Editar Membresía".
-            document.querySelectorAll('.edit-membership-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Simula la carga de datos de una membresía para la edición.
-                    const membership = {
-                        id: '1',
-                        name: 'Premium',
-                        description: 'Acceso ilimitado + Entrenador',
-                        price: '99',
-                        duration: '30',
-                        benefits: ['24', 'trainer', 'classes', 'sauna'], // Beneficios en un array
-                        color: 'indigo'
-                    };
-                    openMembershipModal('Editar Membresía', membership); // Abre el modal con los datos de la membresía.
-                });
-            });
-            
-            // Asigna eventos de click a todos los botones de "Eliminar Membresía".
-            document.querySelectorAll('.delete-membership-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    currentMembershipId = '1'; // Guarda el ID de la membresía a eliminar (simulado).
-                    // Muestra el modal de confirmación de eliminación.
-                    showConfirmDelete('Eliminar membresía', '¿Estás seguro que deseas eliminar esta membresía?', function() {
-                        showNotification('Membresía eliminada correctamente'); // Muestra notificación al confirmar.
-                    });
-                });
-            });
-          
-          
-          // =================================================================
-            // MANEJO DE EVENTOS DEL MODAL ASIGNAR MEMBRESÍA
-            // =================================================================
-            document.getElementById('close-assign-membership-modal').addEventListener('click', closeAssignMembershipModal);
-            document.getElementById('cancel-assign-membership-btn').addEventListener('click', closeAssignMembershipModal);
-            document.getElementById('save-assign-membership-btn').addEventListener('click', saveAssignedMembership); // Nueva función para guardar asignación
-          
-          
-          // =================================================================
-            // MANEJO DE EVENTOS PARA REGISTRO DE INGRESO
-            // =================================================================
-            document.getElementById('search-client-btn').addEventListener('click', searchClient);
-            document.getElementById('client-search-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchClient();
-                }
-            });
-
-            document.getElementById('grant-access-btn').addEventListener('click', function() {
-                showNotification('Acceso concedido al cliente.');
-                document.getElementById('client-status-area').classList.add('hidden'); // Ocultar el área de estado
-                document.getElementById('client-search-input').value = ''; // Limpiar el campo de búsqueda
-            });
-
-            document.getElementById('charge-membership-btn').addEventListener('click', function() {
-                // Reutilizamos el modal de asignar membresía pero con un nuevo título/propósito
-                openAssignMembershipModal('Cobrar y Asignar Membresía');
-            });
-          
-            
-            // =================================================================
-            // MANEJO DE EVENTOS DEL MODAL DE MIEMBRO
-            // =================================================================
-            // Cierra el modal de miembro al hacer click en la "X" o "Cancelar".
-            document.getElementById('close-member-modal').addEventListener('click', closeMemberModal);
-            document.getElementById('cancel-member-btn').addEventListener('click', closeMemberModal);
-            // Guarda los datos del miembro al hacer click en "Guardar".
-            document.getElementById('save-member-btn').addEventListener('click', saveMember);
-            
-            // Simula el click en el input de tipo file cuando se presiona el botón "Subir foto".
-            document.getElementById('upload-photo-btn').addEventListener('click', function() {
-                document.getElementById('member-photo').click();
-            });
-            
-            // Muestra una vista previa de la imagen seleccionada para el miembro.
-            document.getElementById('member-photo').addEventListener('change', function(e) {
-                if (e.target.files && e.target.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        document.getElementById('member-photo-preview').src = event.target.result;
-                    };
-                    reader.readAsDataURL(e.target.files[0]);
-                }
-            });
-            
-            // =================================================================
-            // MANEJO DE EVENTOS DEL MODAL DE MEMBRESÍA
-            // =================================================================
-            // Cierra el modal de membresía al hacer click en la "X" o "Cancelar".
-            document.getElementById('close-membership-modal').addEventListener('click', closeMembershipModal);
-            document.getElementById('cancel-membership-btn').addEventListener('click', closeMembershipModal);
-            // Guarda los datos de la membresía al hacer click en "Guardar".
-            document.getElementById('save-membership-btn').addEventListener('click', saveMembership);
-            
-            // =================================================================
-            // MANEJO DE EVENTOS DEL MODAL DE CONFIRMACIÓN DE ELIMINACIÓN
-            // =================================================================
-            // Cierra el modal de confirmación al hacer click en la "X" o "Cancelar".
-            document.getElementById('close-confirm-delete-modal').addEventListener('click', closeConfirmDeleteModal);
-            document.getElementById('cancel-delete-btn').addEventListener('click', closeConfirmDeleteModal);
-            // Confirma la eliminación al hacer click en "Eliminar".
-            document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
-            
-            // =================================================================
-            // REGISTRO DEL SERVICE WORKER PARA PWA
-            // =================================================================
-            // Verifica si el navegador soporta Service Workers.
-            if ('serviceWorker' in navigator) {
-                // Se registra el Service Worker cuando la página se ha cargado completamente.
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js').then(registration => {
-                        console.log('ServiceWorker registration successful'); // Mensaje de éxito en consola.
-                    }).catch(err => {
-                        console.log('ServiceWorker registration failed: ', err); // Mensaje de error en consola.
-                    });
-                });
-            }
-        });
-        
-        // =================================================================
-        // FUNCIONES DE NAVEGACIÓN ENTRE SECCIONES
-        // =================================================================
-        // Muestra la sección del Dashboard y oculta las demás.
-        function showDashboard() {
-            hideAllSections();
-            document.getElementById('dashboard-content').classList.remove('hidden');
-            // Aquí se podría añadir lógica para cargar datos específicos del dashboard.
-        }
-        
-        // Muestra la sección de Miembros y oculta las demás.
-        function showMembers() {
-            hideAllSections();
-            document.getElementById('members-content').classList.remove('hidden');
-            // Aquí se podría añadir lógica para cargar la lista de miembros.
-        }
-        
-        // Muestra la sección de Membresías y oculta las demás.
-        function showMemberships() {
-            hideAllSections();
-            document.getElementById('memberships-content').classList.remove('hidden');
-            // Aquí se podría añadir lógica para cargar la lista de membresías.
-        }
-        
-        // Muestra la sección de Reportes y oculta las demás, e inicializa los gráficos.
-        function showReports() {
-            hideAllSections();
-            document.getElementById('reports-content').classList.remove('hidden');
-            initCharts(); // Llama a la función para inicializar los gráficos.
-        }
-      
-      // Muestra la sección de Registro de Ingreso y oculta las demás.
-        function showCheckIn() {
-            hideAllSections();
-            document.getElementById('checkin-content').classList.remove('hidden');
-            // Aquí se podría añadir lógica para inicializar la sección de check-in si fuera necesario.
-        }
-        
-        // Oculta todas las secciones de contenido.
-        function hideAllSections() {
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.add('hidden'); // Añade la clase 'hidden' para ocultar.
-            });
-        }
-
-        // **NUEVA FUNCIÓN:** Cierra el sidebar móvil.
-        function closeSidebar() {
-            document.querySelector('.sidebar').classList.remove('active');
-        }
-        
-        // =================================================================
-        // FUNCIONES PARA LA GESTIÓN DE MIEMBROS
-        // =================================================================
-        /**
-         * Abre el modal de miembro para añadir uno nuevo o editar uno existente.
-         * @param {string} title - El título del modal (ej. "Nuevo Miembro", "Editar Miembro").
-         * @param {object} [member=null] - Objeto con los datos del miembro si se está editando.
-         */
-        function openMemberModal(title, member = null) {
-            document.getElementById('member-modal-title').textContent = title;
-            document.getElementById('member-modal').classList.remove('hidden');
-            
-            if (member) {
-                // Si hay datos de miembro, rellena el formulario para edición.
-                document.getElementById('member-id').value = member.id;
-                document.getElementById('member-name').value = member.name;
-                document.getElementById('member-email').value = member.email;
-                document.getElementById('member-phone').value = member.phone;
-                document.getElementById('member-address').value = member.address;
-                document.getElementById('member-birthdate').value = member.birthdate;
-                document.getElementById('member-gender').value = member.gender;
-                document.getElementById('member-photo-preview').src = member.photo;
+            if (email === 'admin@gympro.com' && password === 'admin123') {
+                document.getElementById('admin-navbar').style.display = 'block';
+                showScreen('admin-dashboard');
+            } else if (email && password) {
+                document.getElementById('admin-navbar').style.display = 'none';
+                showScreen('user-profile-screen');
             } else {
-                // Si no hay datos de miembro, resetea el formulario para un nuevo miembro.
-                document.getElementById('member-form').reset();
-                document.getElementById('member-photo-preview').src = 'https://via.placeholder.com/100'; // Imagen por defecto.
+                alert('Por favor ingresa tus credenciales');
             }
         }
         
-        // Cierra el modal de miembro.
-        function closeMemberModal() {
-            document.getElementById('member-modal').classList.add('hidden');
-        }
-        
-        // Función para guardar (crear o actualizar) un miembro.
-        function saveMember() {
-            // Aquí iría la lógica real para enviar los datos del miembro a un backend o base de datos local.
-            const isNew = document.getElementById('member-id').value === ''; // Determina si es un nuevo miembro o una edición.
-            showNotification(isNew ? 'Miembro creado correctamente' : 'Miembro actualizado correctamente'); // Muestra una notificación.
-            closeMemberModal(); // Cierra el modal.
-            // En una aplicación real, aquí se recargaría la lista de miembros para reflejar los cambios.
-        }
-        
-        // =================================================================
-        // FUNCIONES PARA LA GESTIÓN DE MEMBRESÍAS
-        // =================================================================
-        /**
-         * Abre el modal de membresía para añadir una nueva o editar una existente.
-         * @param {string} title - El título del modal.
-         * @param {object} [membership=null] - Objeto con los datos de la membresía si se está editando.
-         */
-        function openMembershipModal(title, membership = null) {
-            document.getElementById('membership-modal-title').textContent = title;
-            document.getElementById('membership-modal').classList.remove('hidden');
+        // Mock register function
+        function registerUser() {
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
             
-            if (membership) {
-                // Rellena el formulario con los datos de la membresía existente.
-                document.getElementById('membership-id').value = membership.id;
-                document.getElementById('membership-name').value = membership.name;
-                document.getElementById('membership-description').value = membership.description;
-                document.getElementById('membership-price').value = membership.price;
-                document.getElementById('membership-duration').value = membership.duration;
-                
-                // Desmarca todos los checkboxes de beneficios antes de marcar los correctos.
-                document.querySelectorAll('#membership-form input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-                
-                // Marca los beneficios asociados a la membresía.
-                membership.benefits.forEach(benefit => {
-                    document.getElementById(`benefit-${benefit}`).checked = true;
-                });
-                
-                document.getElementById('membership-color').value = membership.color;
+            if (name && email && password) {
+                alert(`¡Bienvenido ${name}! Tu cuenta ha sido creada exitosamente.`);
+                showScreen('login-screen');
             } else {
-                // Resetea el formulario para una nueva membresía.
-                document.getElementById('membership-form').reset();
+                alert('Por favor completa todos los campos');
             }
         }
         
-        // Cierra el modal de membresía.
-        function closeMembershipModal() {
-            document.getElementById('membership-modal').classList.add('hidden');
+        // User ID counter
+        let userIdCounter = 3; // Starting after the existing 3 users
+        
+        // Mock user management functions
+        function editUser(id) {
+            alert(`Editar usuario con ID: ${id.toString().padStart(3, '0')}`);
+            showScreen('create-user-screen');
         }
         
-        // Función para guardar (crear o actualizar) una membresía.
+        function deleteUser(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
+                alert(`Usuario con ID: ${id.toString().padStart(3, '0')} eliminado`);
+            }
+        }
+        
+        function saveUser() {
+            userIdCounter++;
+            const newId = userIdCounter.toString().padStart(3, '0');
+            alert(`Usuario ${newId} guardado exitosamente`);
+            showScreen('admin-dashboard');
+        }
+        
+        function saveUser() {
+            alert('Usuario guardado exitosamente');
+            showScreen('admin-dashboard');
+        }
+        
+        // Mock membership management functions
+        function editMembership(id) {
+            alert(`Editar membresía con ID: ${id}`);
+            showScreen('create-membership-screen');
+        }
+        
+        function deleteMembership(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta membresía?')) {
+                alert(`Membresía con ID: ${id} eliminada`);
+            }
+        }
+        
         function saveMembership() {
-            // Aquí iría la lógica real para guardar los datos de la membresía.
-            const isNew = document.getElementById('membership-id').value === '';
-            showNotification(isNew ? 'Membresía creada correctamente' : 'Membresía actualizada correctamente');
-            closeMembershipModal();
-            // En una aplicación real, aquí se recargaría la lista de membresías para reflejar los cambios.
+            alert('Membresía guardada exitosamente');
+            showScreen('membership-management-screen');
         }
         
-        // =================================================================
-        // FUNCIONES PARA LA CONFIRMACIÓN DE ELIMINACIÓN
-        // =================================================================
-        /**
-         * Muestra el modal de confirmación antes de eliminar un elemento.
-         * @param {string} title - El título del modal de confirmación.
-         * @param {string} message - El mensaje de confirmación a mostrar.
-         * @param {function} callback - La función a ejecutar si el usuario confirma la eliminación.
-         */
-        function showConfirmDelete(title, message, callback) {
-            document.getElementById('confirm-delete-title').textContent = title;
-            document.getElementById('confirm-delete-message').textContent = message;
-            document.getElementById('confirm-delete-modal').classList.remove('hidden');
-            deleteCallback = callback; // Guarda la función de callback para ejecutarla después.
-        }
-        
-        // Cierra el modal de confirmación de eliminación.
-        function closeConfirmDeleteModal() {
-            document.getElementById('confirm-delete-modal').classList.add('hidden');
-            deleteCallback = null; // Resetea el callback.
-        }
-        
-        // Ejecuta el callback de eliminación si existe y cierra el modal.
-        function confirmDelete() {
-            if (deleteCallback) {
-                deleteCallback(); // Llama a la función que realiza la eliminación.
-            }
-            closeConfirmDeleteModal(); // Cierra el modal.
-        }
-        
-        // =================================================================
-        // FUNCIONES DE NOTIFICACIÓN
-        // =================================================================
-        /**
-         * Muestra una notificación temporal al usuario.
-         * @param {string} message - El mensaje a mostrar en la notificación.
-         * @param {boolean} [isError=false] - Si es true, la notificación será de error (roja), de lo contrario será de éxito (verde).
-         */
-        function showNotification(message, isError = false) {
-            const notification = document.getElementById('notification');
-            notification.querySelector('#notification-message').textContent = message;
-            
-            // Cambia el color de la notificación según si es error o éxito.
-            if (isError) {
-                notification.classList.remove('bg-green-500');
-                notification.classList.add('bg-red-500');
-            } else {
-                notification.classList.remove('bg-red-500');
-                notification.classList.add('bg-green-500');
-            }
-            
-            notification.classList.remove('hidden'); // Muestra la notificación.
-            
-            // Oculta la notificación después de 3 segundos.
-            setTimeout(() => {
-                notification.classList.add('hidden');
-            }, 3000);
-        }
-      
-      
-      // =================================================================
-        // FUNCIONES PARA REGISTRO DE INGRESO
-        // =================================================================
-        function searchClient() {
-            const searchTerm = document.getElementById('client-search-input').value.trim();
-            const statusArea = document.getElementById('client-status-area');
-            const statusMessage = document.getElementById('client-status-message');
-            const clientDetails = document.getElementById('client-details');
-            const grantAccessBtn = document.getElementById('grant-access-btn');
-            const chargeMembershipBtn = document.getElementById('charge-membership-btn');
-
-            // Ocultar botones y área de estado por defecto
-            statusArea.classList.add('hidden');
-            grantAccessBtn.classList.add('hidden');
-            chargeMembershipBtn.classList.add('hidden');
-            statusMessage.className = 'text-lg font-semibold'; // Resetear clases de color
-            clientDetails.textContent = ''; // Limpiar detalles anteriores
-
-            if (!searchTerm) {
-                showNotification('Por favor, ingresa un nombre o ID.', true); // true para notificación de error
-                return;
-            }
-
-            // Simulación de búsqueda de cliente
-            // En un caso real, aquí harías una petición a tu backend o IndexedDB
-            const mockClients = [{
-                id: '001',
-                name: 'Juan Pérez',
-                membershipStatus: 'activo', // 'activo', 'vencido', 'sin membresia'
-                membershipType: 'Premium',
-                expirationDate: '2024-12-31'
-            }, {
-                id: '002',
-                name: 'María Gómez',
-                membershipStatus: 'vencido',
-                membershipType: 'Estándar',
-                expirationDate: '2024-06-15'
-            }, {
-                id: '003',
-                name: 'Carlos Ruiz',
-                membershipStatus: 'sin membresia',
-                membershipType: 'N/A',
-                expirationDate: 'N/A'
-            }, {
-                id: '004',
-                name: 'Ana López',
-                membershipStatus: 'activo',
-                membershipType: 'Básica',
-                expirationDate: '2025-01-20'
-            }];
-
-            const foundClient = mockClients.find(client => 
-                client.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                client.id.toLowerCase() === searchTerm.toLowerCase()
-            );
-
-            statusArea.classList.remove('hidden'); // Mostrar el área de estado
-
-            if (foundClient) {
-                switch (foundClient.membershipStatus) {
-                    case 'activo':
-                        statusMessage.textContent = `Membresía Activa: ${foundClient.name}`;
-                        statusMessage.classList.add('text-green-600');
-                        clientDetails.textContent = `ID: ${foundClient.id} | Tipo: ${foundClient.membershipType} | Vence: ${foundClient.expirationDate}`;
-                        grantAccessBtn.classList.remove('hidden');
-                        showNotification(`Acceso concedido a ${foundClient.name}.`, false);
-                        break;
-                    case 'vencido':
-                        statusMessage.textContent = `Membresía Vencida: ${foundClient.name}`;
-                        statusMessage.classList.add('text-red-600');
-                        clientDetails.textContent = `ID: ${foundClient.id} | Tipo: ${foundClient.membershipType} | Vencida desde: ${foundClient.expirationDate}`;
-                        chargeMembershipBtn.classList.remove('hidden');
-                        showNotification(`Membresía de ${foundClient.name} vencida. Requiere renovación.`, true);
-                        break;
-                    case 'sin membresia':
-                        statusMessage.textContent = `Sin Membresía: ${foundClient.name}`;
-                        statusMessage.classList.add('text-yellow-600');
-                        clientDetails.textContent = `ID: ${foundClient.id} | Este cliente no tiene una membresía activa.`;
-                        chargeMembershipBtn.classList.remove('hidden');
-                        showNotification(`${foundClient.name} no tiene membresía. Ofrecer una.`, true);
-                        break;
-                }
-            } else {
-                statusMessage.textContent = `Cliente no encontrado: "${searchTerm}"`;
-                statusMessage.classList.add('text-gray-600');
-                clientDetails.textContent = 'Verifica el nombre o ID ingresado o crea un nuevo miembro.';
-                // Podrías añadir un botón para 'Añadir nuevo miembro' aquí si lo deseas
-                showNotification('Cliente no encontrado.', true);
-            }
-        }
-
-        /**
-         * Abre el modal para asignar/cobrar una membresía.
-         * Reutiliza el modal existente de asignación pero puede tener un título diferente.
-         * @param {string} title - El título del modal.
-         * @param {object} [data=null] - Datos para prellenar el modal (ej. ID del miembro).
-         */
-        function openAssignMembershipModal(title, data = null) {
-            document.getElementById('assign-membership-modal').classList.remove('hidden');
-            // Aquí puedes ajustar el título si es diferente del predeterminado "Asignar Membresía"
-            document.querySelector('#assign-membership-modal h3').textContent = title; 
-
-            // Si hay datos, puedes prellenar el formulario de asignación
-            if (data && data.memberId) {
-                document.getElementById('assign-member-id').value = data.memberId;
-                // Puedes preseleccionar una membresía, fecha, etc.
-            } else {
-                document.getElementById('assign-membership-form').reset(); // Limpiar el formulario
-            }
-        }
-      
-      // =================================================================
-        // FUNCIONES PARA EL MODAL DE ASIGNAR MEMBRESÍA
-        // =================================================================
-        function closeAssignMembershipModal() {
-            document.getElementById('assign-membership-modal').classList.add('hidden');
-            // Opcional: Limpiar el formulario al cerrar
-            document.getElementById('assign-membership-form').reset();
-        }
-
-        function saveAssignedMembership() {
-            // Aquí iría la lógica para guardar la membresía asignada/cobrada
-            const memberId = document.getElementById('assign-member-id').value;
-            const membershipType = document.getElementById('select-membership').value;
-            const startDate = document.getElementById('membership-start-date').value;
-            const paymentMethod = document.getElementById('payment-method').value;
-            const paymentStatus = document.getElementById('payment-status').value;
-
-            if (!membershipType || !startDate || !paymentMethod || !paymentStatus) {
-                showNotification('Por favor, completa todos los campos para asignar la membresía.', true);
-                return;
-            }
-
-            // Simulación de guardado
-            console.log(`Asignando membresía para miembro ID: ${memberId}`);
-            console.log(`Tipo de Membresía: ${membershipType}`);
-            console.log(`Fecha de Inicio: ${startDate}`);
-            console.log(`Método de Pago: ${paymentMethod}`);
-            console.log(`Estado de Pago: ${paymentStatus}`);
-
-            showNotification('Membresía asignada y cobrada correctamente.');
-            closeAssignMembershipModal();
-            // Después de asignar/cobrar, podrías querer recargar la sección de check-in
-            // o limpiar el estado del cliente en la pantalla de check-in.
-            document.getElementById('client-status-area').classList.add('hidden'); // Ocultar el área de estado
-            document.getElementById('client-search-input').value = ''; // Limpiar el campo de búsqueda
-        }
-      
-        
-        // =================================================================
-        // FUNCIONES DE GRÁFICOS (SIMULADOS)
-        // =================================================================
-        // Inicializa los gráficos del reporte. Actualmente, solo muestran un texto.
-        // En una aplicación real, se usaría una librería como Chart.js para dibujar los gráficos.
-        function initCharts() {
-            const charts = [
-                { id: 'incomeChart', text: 'Gráfico de ingresos mensuales' },
-                { id: 'membershipDistributionChart', text: 'Gráfico de distribución de membresías' },
-                { id: 'newMembersChart', text: 'Gráfico de nuevos miembros' }
-            ];
-            
-            charts.forEach(chart => {
-                const canvas = document.getElementById(chart.id);
-                if (canvas) {
-                    const ctx = canvas.getContext('2d'); // Obtiene el contexto 2D del canvas.
-                    ctx.font = '14px Arial'; // Define la fuente del texto.
-                    ctx.fillStyle = '#666'; // Define el color del texto.
-                    ctx.textAlign = 'center'; // Centra el texto.
-                    ctx.fillText(chart.text, canvas.width / 2, canvas.height / 2); // Dibuja el texto en el centro del canvas.
-                }
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
             });
         }
         
-// =================================================================
-// MANEJO DEL MODAL DE AUTENTICACIÓN
-// =================================================================
-const authModal = document.getElementById('auth-modal');
-const closeAuthModalBtn = document.getElementById('close-auth-modal');
-const openAuthModalBtn = document.getElementById('open-auth-modal');
-const tabLogin = document.getElementById('tab-login');
-const tabRegister = document.getElementById('tab-register');
-const loginForm = document.getElementById('login-form-container');
-const registerForm = document.getElementById('register-form-container');
-
-// Botones y campos de formulario
-const loginEmailInput = document.getElementById('login-email');
-const loginPasswordInput = document.getElementById('login-password');
-const loginBtn = document.getElementById('login-btn');
-const googleLoginBtn = document.getElementById('google-login-btn');
-const registerEmailInput = document.getElementById('register-email');
-const registerPasswordInput = document.getElementById('register-password');
-const registerPasswordConfirmInput = document.getElementById('register-password-confirm');
-const registerBtn = document.getElementById('register-btn');
-const logoutBtn = document.querySelector('.logout-btn');
-
-// Abrir/Cerrar Modal
-function openAuthModal() {
-    authModal.classList.remove('hidden');
-}
-
-function closeAuthModal() {
-    authModal.classList.add('hidden');
-}
-
-openAuthModalBtn.addEventListener('click', openAuthModal);
-closeAuthModalBtn.addEventListener('click', closeAuthModal);
-
-// Manejar pestañas
-tabLogin.addEventListener('click', () => {
-    tabLogin.classList.replace('text-gray-500', 'text-indigo-600');
-    tabLogin.classList.add('border-indigo-600');
-    tabRegister.classList.replace('text-indigo-600', 'text-gray-500');
-    tabRegister.classList.remove('border-indigo-600');
-    loginForm.classList.remove('hidden');
-    registerForm.classList.add('hidden');
-});
-
-tabRegister.addEventListener('click', () => {
-    tabRegister.classList.replace('text-gray-500', 'text-indigo-600');
-    tabRegister.classList.add('border-indigo-600');
-    tabLogin.classList.replace('text-indigo-600', 'text-gray-500');
-    tabLogin.classList.remove('border-indigo-600');
-    registerForm.classList.remove('hidden');
-    loginForm.classList.add('hidden');
-});
-
-// Autenticación con Correo y Contraseña
-loginBtn.addEventListener('click', () => {
-    const email = loginEmailInput.value;
-    const password = loginPasswordInput.value;
-    signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            showNotification('Inicio de sesión exitoso. ¡Bienvenido!');
-            closeAuthModal();
-        })
-        .catch((error) => {
-            const errorCode = error.code;
-            let errorMessage = 'Error al iniciar sesión. Por favor, verifica tus credenciales.';
-            if (errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found') {
-                errorMessage = 'Correo o contraseña incorrectos.';
-            }
-            showNotification(errorMessage, true);
-        });
-});
-
-registerBtn.addEventListener('click', () => {
-    const email = registerEmailInput.value;
-    const password = registerPasswordInput.value;
-    const passwordConfirm = registerPasswordConfirmInput.value;
-
-    if (password !== passwordConfirm) {
-        showNotification('Las contraseñas no coinciden.', true);
-        return;
-    }
-    
-    // Agrega una validación básica para la longitud de la contraseña
-    if (password.length < 6) {
-        showNotification('La contraseña debe tener al menos 6 caracteres.', true);
-        return;
-    }
-
-    createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            showNotification('Registro exitoso. ¡Ya puedes iniciar sesión!');
-            tabLogin.click(); // Cambia a la pestaña de login después del registro
-        })
-        .catch((error) => {
-            const errorCode = error.code;
-            let errorMessage = 'Error al registrar el usuario.';
-            if (errorCode === 'auth/email-already-in-use') {
-                errorMessage = 'El correo electrónico ya está en uso.';
-            } else if (errorCode === 'auth/weak-password') {
-                errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
-            } else if (errorCode === 'auth/invalid-email') {
-                errorMessage = 'El formato del correo electrónico es inválido.';
-            }
-            console.error('Error de registro:', error);
-            showNotification(errorMessage, true);
-        });
-});
-
-// Autenticación con Google
-googleLoginBtn.addEventListener('click', () => {
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider)
-        .then((result) => {
-            showNotification('Inicio de sesión con Google exitoso. ¡Bienvenido!');
-            closeAuthModal();
-        })
-        .catch((error) => {
-            const errorMessage = 'Error al iniciar sesión con Google.';
-            console.error('Error de autenticación con Google:', error);
-            showNotification(errorMessage, true);
-        });
-});
-
-// Estado de Autenticación
-onAuthStateChanged(auth, (user) => {
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('main');
-    const header = document.querySelector('header');
-
-    if (user) {
-        // Usuario logueado
-        openAuthModalBtn.classList.add('hidden');
-        logoutBtn.parentElement.classList.remove('hidden');
-        // Muestra el contenido de la aplicación
-        sidebar.classList.remove('hidden');
-        mainContent.classList.remove('hidden');
-        header.classList.remove('hidden');
-        showDashboard(); // Muestra el dashboard por defecto
-    } else {
-        // Usuario no logueado
-        openAuthModalBtn.classList.remove('hidden');
-        logoutBtn.parentElement.classList.add('hidden');
-        // Oculta el contenido de la aplicación y muestra el modal de login
-        sidebar.classList.add('hidden');
-        mainContent.classList.add('hidden');
-        header.classList.add('hidden');
-        openAuthModal();
-    }
-});
-
-// Cerrar sesión
-logoutBtn.addEventListener('click', () => {
-    signOut(auth)
-        .then(() => {
-            showNotification('Sesión cerrada correctamente.');
-        })
-        .catch((error) => {
-            showNotification('Error al cerrar sesión.', true);
-        });
-});
-
-
+        // Install prompt for PWA
+        let deferredPrompt;
         
-        // =================================================================
-        // PWA: SERVICE WORKER (Simulado en el mismo archivo para demostración)
-        // =================================================================
-        // NOTA: En un entorno de producción, este código debería ir en un archivo
-        // separado llamado `sw.js` en la raíz de tu proyecto.
-        const serviceWorkerScript = `
-            const CACHE_NAME = 'gymcontrol-v1'; // Nombre de la caché para el almacenamiento offline
-            const urlsToCache = [
-                '/', // La raíz de la aplicación
-                '/index.html', // El archivo HTML principal
-                '/styles/main.css', // Archivo de estilos (si se usara uno externo en lugar de Tailwind CDN)
-                '/scripts/main.js', // Archivo de scripts (donde estaría este JS si fuera externo)
-                '/images/logo.png' // Ejemplo de un recurso de imagen a cachear
-            ];
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            deferredPrompt = e;
+            // Update UI notify the user they can install the PWA
+            console.log('PWA install prompt available');
             
-            // Evento 'install': Se activa cuando el Service Worker se instala.
-            // Aquí se precarga en caché los recursos esenciales para el funcionamiento offline.
-            self.addEventListener('install', event => {
-                event.waitUntil(
-                    caches.open(CACHE_NAME) // Abre la caché con el nombre definido
-                        .then(cache => {
-                            return cache.addAll(urlsToCache); // Añade todos los URLs a la caché
-                        })
-                );
-            });
-            
-            // Evento 'fetch': Se activa cada vez que el navegador solicita un recurso.
-            // Intercepta las peticiones de red y sirve los recursos desde la caché si están disponibles,
-            // o los obtiene de la red si no lo están.
-            self.addEventListener('fetch', event => {
-                event.respondWith(
-                    caches.match(event.request) // Intenta encontrar la petición en la caché
-                        .then(response => {
-                            if (response) {
-                                return response; // Si se encuentra en caché, la devuelve
-                            }
-                            return fetch(event.request); // Si no, la obtiene de la red
-                        })
-                );
-            });
-        `;
-      
-      
+            // You can show a custom install button here if you want
+            // For example: document.getElementById('installButton').style.display = 'block';
+        });
     </script>
-  
-  <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-sm animate-fadeIn">
-        <div class="flex justify-between items-center border-b px-6 py-4">
-            <h3 class="text-lg font-semibold">Accede a GymControl</h3>
-            <button id="close-auth-modal" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6">
-            <div class="flex border-b mb-4">
-                <button id="tab-login" class="flex-1 py-2 text-center text-sm font-medium text-indigo-600 border-b-2 border-indigo-600 transition">Iniciar Sesión</button>
-                <button id="tab-register" class="flex-1 py-2 text-center text-sm font-medium text-gray-500 hover:text-indigo-600 transition">Registrarse</button>
-            </div>
-
-            <div id="login-form-container" class="space-y-4">
-                <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <input type="password" id="login-password" placeholder="Contraseña" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <button id="login-btn" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Iniciar Sesión</button>
-                <p class="text-center text-sm text-gray-500">o</p>
-                <button id="google-login-btn" class="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100 transition">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5 mr-2"> Iniciar con Google
-                </button>
-            </div>
-            
-            <div id="register-form-container" class="space-y-4 hidden">
-                <input type="email" id="register-email" placeholder="Correo electrónico" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <input type="password" id="register-password" placeholder="Contraseña" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <input type="password" id="register-password-confirm" placeholder="Confirmar contraseña" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <button id="register-btn" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Registrarse</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<button id="open-auth-modal" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hidden">Login</button>
-  
 </body>
 </html>
