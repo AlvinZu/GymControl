@@ -535,6 +535,16 @@
                                 </div>
                             </dl>
                         </div>
+                         <!-- Progress Bar & Renewal Message -->
+                         <div class="mt-8">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-sm font-medium text-gray-700">Días restantes: <span id="days-remaining"></span></h4>
+                                <span id="renewal-message" class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 hidden">Renueva tu membresía</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="user-progress-bar" class="h-2.5 rounded-full" style="width: 0%;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -642,7 +652,6 @@
             // Recargar datos al cambiar de pantalla si es necesario
             if (screenId === 'admin-dashboard') {
                 fetchUsers();
-                populateMembershipOptions('user-membership');
             } else if (screenId === 'membership-management-screen') {
                 fetchMemberships();
             } else if (screenId === 'create-user-screen') {
@@ -681,6 +690,45 @@
                     document.getElementById('user-profile-membership').textContent = userData.membership;
                     document.getElementById('user-profile-expiration').textContent = userData.expiration ? new Date(userData.expiration.seconds * 1000).toLocaleDateString('es-ES') : 'N/A';
                     document.getElementById('user-profile-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
+                    
+                    // Lógica para la barra de progreso
+                    const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
+                    const currentDate = new Date();
+                    const daysRemaining = expirationDate ? Math.ceil((expirationDate - currentDate) / (1000 * 60 * 60 * 24)) : 0;
+                    
+                    const progressBar = document.getElementById('user-progress-bar');
+                    const renewalMessage = document.getElementById('renewal-message');
+                    const daysRemainingText = document.getElementById('days-remaining');
+
+                    daysRemainingText.textContent = daysRemaining > 0 ? daysRemaining : 0;
+                    
+                    let barColor = 'bg-gray-200';
+                    let barWidth = '0%';
+                    let messageText = '';
+
+                    if (daysRemaining > 5) {
+                        barColor = 'bg-green-500';
+                        barWidth = '100%';
+                    } else if (daysRemaining > 0 && daysRemaining <= 5) {
+                        barColor = 'bg-yellow-500';
+                        barWidth = `${(daysRemaining / 5) * 100}%`;
+                    } else {
+                        barColor = 'bg-red-500';
+                        barWidth = '0%';
+                        if (expirationDate) {
+                            messageText = 'Renueva tu membresía';
+                        }
+                    }
+
+                    if (progressBar) {
+                        progressBar.className = `h-2.5 rounded-full ${barColor}`;
+                        progressBar.style.width = barWidth;
+                    }
+                    if (renewalMessage) {
+                        renewalMessage.textContent = messageText;
+                        renewalMessage.classList.toggle('hidden', messageText === '');
+                    }
+
                 }
             } else {
                 // Usuario no logueado
@@ -803,7 +851,7 @@
                     <td data-label="Nombre">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                <span class="text-indigo-600 font-medium">${user.name.substring(0, 2).toUpperCase()}</span>
+                                <span class="text-indigo-600 font-medium">${user.name ? user.name.substring(0, 2).toUpperCase() : 'NA'}</span>
                             </div>
                             <div class="ml-4">
                                 <div class="text-sm font-medium text-gray-900">${user.name}</div>
