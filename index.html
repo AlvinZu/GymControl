@@ -357,9 +357,10 @@
                             </div>
                             
                             <div class="sm:col-span-3">
-                                <label for="user-expiration" class="block text-sm font-medium text-gray-700">Fecha de Vencimiento</label>
-                                <input type="date" id="user-expiration" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <label for="user-start-date" class="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
+                                <input type="date" id="user-start-date" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             </div>
+                            <input type="hidden" id="user-expiration-date">
                         </div>
                     </div>
                     
@@ -641,8 +642,11 @@
             // Recargar datos al cambiar de pantalla si es necesario
             if (screenId === 'admin-dashboard') {
                 fetchUsers();
+                populateMembershipOptions('user-membership');
             } else if (screenId === 'membership-management-screen') {
                 fetchMemberships();
+            } else if (screenId === 'create-user-screen') {
+                 populateMembershipOptions('user-membership');
             }
         }
         
@@ -835,8 +839,25 @@
             const name = document.getElementById('user-name').value;
             const email = document.getElementById('user-email').value;
             const password = document.getElementById('user-password').value;
-            const membership = document.getElementById('user-membership').value;
-            const expiration = document.getElementById('user-expiration').value;
+            const membershipId = document.getElementById('user-membership').value;
+            const startDate = document.getElementById('user-start-date').value;
+            
+            // Validar campos
+            if (!name || !email || !membershipId || !startDate) {
+                alert('Por favor, completa todos los campos obligatorios.');
+                return;
+            }
+
+            // Obtener la membresía seleccionada para calcular la fecha de expiración
+            const membershipRef = doc(db, "memberships", membershipId);
+            const membershipSnap = await getDoc(membershipRef);
+            const membershipData = membershipSnap.data();
+
+            let expirationDate = null;
+            if (membershipData && membershipData.duration) {
+                const start = new Date(startDate);
+                expirationDate = new Date(start.getTime() + membershipData.duration * 24 * 60 * 60 * 1000);
+            }
             
             // Lógica para guardar o actualizar el usuario
             if (userId) {
@@ -844,19 +865,16 @@
                 await updateDoc(userRef, {
                     name: name,
                     email: email,
-                    membership: membership,
-                    expiration: expiration ? new Date(expiration) : null
+                    membership: membershipData.name,
+                    expiration: expirationDate
                 });
                 alert('Usuario actualizado exitosamente');
             } else {
-                // Lógica de registro para un nuevo usuario admin
-                // Nota: La creación de usuarios con contraseña solo debería hacerse desde el lado del cliente si es para usuarios finales
-                // Para admins, es mejor manejarlo desde la consola o una API
                 await addDoc(collection(db, "users"), {
                     name: name,
                     email: email,
-                    membership: membership,
-                    expiration: expiration ? new Date(expiration) : null,
+                    membership: membershipData.name,
+                    expiration: expirationDate,
                     role: 'user'
                 });
                 alert('Usuario creado exitosamente');
@@ -876,7 +894,8 @@
                 document.getElementById('user-name').value = userData.name;
                 document.getElementById('user-email').value = userData.email;
                 document.getElementById('user-membership').value = userData.membership;
-                document.getElementById('user-expiration').value = userData.expiration ? new Date(userData.expiration.seconds * 1000).toISOString().split('T')[0] : '';
+                // Asignar una fecha de inicio ficticia para la edición
+                document.getElementById('user-start-date').value = new Date().toISOString().split('T')[0];
             } else {
                 alert("No se encontró el usuario.");
             }
@@ -967,7 +986,7 @@
                 fetchMemberships();
             }
         }
-
+        
         // =================================================================
         // DETALLES DEL USUARIO (MODAL)
         // =================================================================
@@ -989,7 +1008,7 @@
                 // Llenar el modal con los datos del usuario
                 document.getElementById('modal-user-name').textContent = userData.name;
                 document.getElementById('modal-user-email').textContent = userData.email;
-                document.getElementById('modal-user-initials').textContent = userData.name.substring(0, 2).toUpperCase();
+                document.getElementById('modal-user-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
                 document.getElementById('modal-user-phone').textContent = userData.phone || 'N/A';
                 document.getElementById('modal-user-birthdate').textContent = userData.birthdate || 'N/A';
                 document.getElementById('modal-user-address').textContent = userData.address || 'N/A';
@@ -1014,6 +1033,23 @@
 
         function closeUserDetailsModal() {
             document.getElementById('user-details-modal').classList.add('hidden');
+        }
+        
+        async function populateMembershipOptions(selectId) {
+            const selectElement = document.getElementById(selectId);
+            if (!selectElement) return;
+
+            selectElement.innerHTML = '<option value="">Seleccionar Membresía</option>';
+
+            const membershipsCollection = collection(db, "memberships");
+            const membershipSnapshot = await getDocs(membershipsCollection);
+            membershipSnapshot.forEach(doc => {
+                const membership = doc.data();
+                const option = document.createElement('option');
+                option.value = doc.id;
+                option.textContent = `${membership.name} (${membership.duration} días - $${membership.price})`;
+                selectElement.appendChild(option);
+            });
         }
         
         // =================================================================
