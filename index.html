@@ -567,59 +567,59 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Modal de Detalles de Usuario (nuevo) -->
-    <div id="user-details-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md animate-fadeIn flex flex-col max-h-[90vh]">
-            <div class="flex justify-between items-center border-b px-6 py-4">
-                <h3 class="text-lg font-semibold">Detalles del Usuario</h3>
-                <button id="close-user-details-modal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="p-6 flex-1 overflow-y-auto custom-scroll">
-                <div class="flex flex-col sm:flex-row items-center mb-6">
-                    <div class="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
-                        <div id="modal-user-initials" class="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center">
-                            <span class="text-indigo-600 text-2xl font-bold">JD</span>
-                        </div>
-                    </div>
-                    <div class="text-center sm:text-left">
-                        <h2 id="modal-user-name" class="text-2xl font-bold text-gray-900">Juan Domínguez</h2>
-                        <p id="modal-user-email" class="text-sm text-gray-500">juan@example.com</p>
-                    </div>
+        <!-- Modal de Detalles de Usuario (nuevo) -->
+        <div id="user-details-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md animate-fadeIn flex flex-col max-h-[90vh]">
+                <div class="flex justify-between items-center border-b px-6 py-4">
+                    <h3 class="text-lg font-semibold">Detalles del Usuario</h3>
+                    <button id="close-user-details-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-                
-                <div class="border-t border-gray-200 pt-5">
-                    <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
-                        <div class="sm:col-span-1">
-                            <dt class="text-sm font-medium text-gray-500">Teléfono</dt>
-                            <dd id="modal-user-phone" class="mt-1 text-sm text-gray-900">N/A</dd>
+                <div class="p-6 flex-1 overflow-y-auto custom-scroll">
+                    <div class="flex flex-col sm:flex-row items-center mb-6">
+                        <div class="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
+                            <div id="modal-user-initials" class="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <span class="text-indigo-600 text-2xl font-bold">JD</span>
+                            </div>
                         </div>
-                        <div class="sm:col-span-1">
-                            <dt class="text-sm font-medium text-gray-500">Fecha de Nacimiento</dt>
-                            <dd id="modal-user-birthdate" class="mt-1 text-sm text-gray-900">N/A</dd>
+                        <div class="text-center sm:text-left">
+                            <h2 id="modal-user-name" class="text-2xl font-bold text-gray-900">Juan Domínguez</h2>
+                            <p id="modal-user-email" class="text-sm text-gray-500">juan@example.com</p>
                         </div>
-                        <div class="sm:col-span-2">
-                            <dt class="text-sm font-medium text-gray-500">Dirección</dt>
-                            <dd id="modal-user-address" class="mt-1 text-sm text-gray-900">N/A</dd>
-                        </div>
-                        <div class="sm:col-span-1">
-                            <dt class="text-sm font-medium text-gray-500">Tipo de Membresía</dt>
-                            <dd id="modal-user-membership" class="mt-1 text-sm text-gray-900">N/A</dd>
-                        </div>
-                        <div class="sm:col-span-1">
-                            <dt class="text-sm font-medium text-gray-500">Fecha de Vencimiento</dt>
-                            <dd id="modal-user-expiration" class="mt-1 text-sm text-gray-900">N/A</dd>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <dt class="text-sm font-medium text-gray-500">Estado de Membresía</dt>
-                            <dd id="modal-user-status" class="mt-1">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Vencida</span>
-                            </dd>
-                        </div>
-                    </dl>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-5">
+                        <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                            <div class="sm:col-span-1">
+                                <dt class="text-sm font-medium text-gray-500">Teléfono</dt>
+                                <dd id="modal-user-phone" class="mt-1 text-sm text-gray-900">N/A</dd>
+                            </div>
+                            <div class="sm:col-span-1">
+                                <dt class="text-sm font-medium text-gray-500">Fecha de Nacimiento</dt>
+                                <dd id="modal-user-birthdate" class="mt-1 text-sm text-gray-900">N/A</dd>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <dt class="text-sm font-medium text-gray-500">Dirección</dt>
+                                <dd id="modal-user-address" class="mt-1 text-sm text-gray-900">N/A</dd>
+                            </div>
+                            <div class="sm:col-span-1">
+                                <dt class="text-sm font-medium text-gray-500">Tipo de Membresía</dt>
+                                <dd id="modal-user-membership" class="mt-1 text-sm text-gray-900">N/A</dd>
+                            </div>
+                            <div class="sm:col-span-1">
+                                <dt class="text-sm font-medium text-gray-500">Fecha de Vencimiento</dt>
+                                <dd id="modal-user-expiration" class="mt-1 text-sm text-gray-900">N/A</dd>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <dt class="text-sm font-medium text-gray-500">Estado de Membresía</dt>
+                                <dd id="modal-user-status" class="mt-1">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Vencida</span>
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
                 </div>
             </div>
             <div class="flex justify-end border-t px-6 py-4">
@@ -630,12 +630,37 @@
         </div>
     </div>
 
-    <!-- Service Worker Registration -->
+    <!-- User Routines Screen (nueva pantalla) -->
+    <div id="user-routines-screen" class="screen p-6">
+        <div class="max-w-3xl mx-auto">
+            <button id="routines-back-to-profile-btn" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+                <i class="fas fa-arrow-left mr-2"></i> Volver a Mi Perfil
+            </button>
+            <div class="bg-white shadow overflow-hidden rounded-lg p-6 text-center">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Mi Rutina</h2>
+                <p class="text-gray-700">Aquí se mostrará tu rutina asignada por un entrenador.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Navigation Bar (barra inferior) -->
+    <div id="client-navbar" class="bg-white border-t border-gray-200 py-3 px-4 fixed bottom-0 left-0 right-0 shadow-lg" style="display: none;">
+        <div class="flex justify-around max-w-md mx-auto">
+            <button id="nav-profile-btn" class="flex flex-col items-center text-indigo-600">
+                <i class="fas fa-user text-xl"></i>
+                <span class="text-xs mt-1">Perfil</span>
+            </button>
+            <button id="nav-routines-btn" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+                <i class="fas fa-running text-xl"></i>
+                <span class="text-xs mt-1">Rutinas</span>
+            </button>
+        </div>
+    </div>
+
     <script type="module">
         // =================================================================
         // CONEXIÓN A FIREBASE Y FIRESTORE
         // =================================================================
-        // Importa los módulos necesarios de Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -651,7 +676,6 @@
             measurementId: "G-WBX1EWBNBC"
         };
         
-        // Inicializa Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -662,29 +686,36 @@
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.style.display = 'none';
-                screen.classList.remove('active-screen'); // Asegurarse de remover la clase
+                screen.classList.remove('active-screen');
             });
             document.getElementById(screenId).style.display = 'flex';
             document.getElementById(screenId).classList.add('active-screen');
 
-            // Recargar datos al cambiar de pantalla si es necesario
-            if (screenId === 'admin-dashboard') {
+            const clientNavbar = document.getElementById('client-navbar');
+            const adminNavbar = document.getElementById('admin-navbar');
+
+            if (screenId === 'user-profile-screen' || screenId === 'user-routines-screen') {
+                clientNavbar.style.display = 'block';
+                adminNavbar.style.display = 'none';
+            } else if (screenId === 'admin-dashboard') {
+                adminNavbar.style.display = 'block';
+                clientNavbar.style.display = 'none';
                 fetchUsers();
             } else if (screenId === 'membership-management-screen') {
+                adminNavbar.style.display = 'block';
+                clientNavbar.style.display = 'none';
                 fetchMemberships();
-            } else if (screenId === 'create-user-screen') {
-                 populateMembershipOptions('user-membership');
+            } else {
+                clientNavbar.style.display = 'none';
+                adminNavbar.style.display = 'none';
             }
         }
         
         // =================================================================
         // AUTENTICACIÓN DE USUARIOS
         // =================================================================
-        // Observa el estado de autenticación para cambiar de pantalla
         onAuthStateChanged(auth, async (user) => {
-            const adminNavbar = document.getElementById('admin-navbar');
             if (user) {
-                // Usuario logueado
                 const usersCollection = collection(db, "users");
                 const userQuery = await getDocs(usersCollection);
                 let userRole = 'user';
@@ -697,12 +728,9 @@
                 });
 
                 if (userRole === 'admin') {
-                    adminNavbar.style.display = 'block';
                     showScreen('admin-dashboard');
                 } else {
-                    adminNavbar.style.display = 'none';
                     showScreen('user-profile-screen');
-                    // Rellenar perfil de usuario
                     document.getElementById('user-profile-name').textContent = userData.name;
                     document.getElementById('user-profile-email').textContent = userData.email;
                     document.getElementById('user-profile-membership').textContent = userData.membership;
@@ -746,16 +774,14 @@
                         renewalMessage.textContent = messageText;
                         renewalMessage.classList.toggle('hidden', messageText === '');
                     }
-
                 }
             } else {
-                // Usuario no logueado
-                adminNavbar.style.display = 'none';
+                document.getElementById('admin-navbar').style.display = 'none';
+                document.getElementById('client-navbar').style.display = 'none';
                 showScreen('welcome-screen');
             }
         });
         
-        // Funciones de login y registro
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -788,11 +814,9 @@
                     role: 'user',
                     membership: 'Ninguna',
                     expiration: null,
-                    // Agregando ID secuencial
                     userId: await getNextUserId()
                 });
-                alert(`¡Bienvenido ${name}! Tu cuenta ha sido creada exitosamente. Inicia sesión para continuar.`);
-                
+                alert(`¡Bienvenido ${name}! Tu cuenta ha sido creada exitosamente.`);
             } catch (error) {
                 alert(`Error al registrarse: ${error.message}`);
             }
@@ -812,7 +836,6 @@
             try {
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
-                // Verificar si el usuario ya existe en Firestore para evitar duplicados
                 const usersCollection = collection(db, "users");
                 const userQuery = await getDocs(usersCollection);
                 let userExists = false;
@@ -830,7 +853,6 @@
                         role: 'user',
                         membership: 'Ninguna',
                         expiration: null,
-                        // Agregando ID secuencial
                         userId: await getNextUserId()
                     });
                 }
@@ -839,14 +861,12 @@
             }
         });
         
-        // Función para cerrar sesión
         document.getElementById('logout-btn').addEventListener('click', () => {
             signOut(auth);
         });
         document.getElementById('user-profile-logout-btn').addEventListener('click', () => {
             signOut(auth);
         });
-
 
         // =================================================================
         // GESTIÓN DE USUARIOS
@@ -872,15 +892,14 @@
             const userSnapshot = await getDocs(usersCollection);
             const users = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // Lógica de ordenamiento
             if (orderBy === 'id-asc') {
                 users.sort((a, b) => (a.userId || 0) - (b.userId || 0));
             } else if (orderBy === 'id-desc') {
                 users.sort((a, b) => (b.userId || 0) - (a.userId || 0));
             } else if (orderBy === 'name-asc') {
-                users.sort((a, b) => a.name.localeCompare(b.name));
+                users.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             } else if (orderBy === 'name-desc') {
-                users.sort((a, b) => b.name.localeCompare(a.name));
+                users.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
             }
 
             users.forEach(userDoc => {
@@ -914,7 +933,6 @@
                 `;
                 usersTableBody.appendChild(row);
                 
-                // Asignar eventos de click a los nuevos elementos
                 row.addEventListener('click', () => showUserDetails(docId));
                 document.getElementById(`edit-user-${docId}`).addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -935,13 +953,11 @@
             const startDate = document.getElementById('user-start-date').value;
             const manualUserId = document.getElementById('user-id-input').value;
             
-            // Validar campos
             if (!name || !email || !membershipId || !startDate) {
                 alert('Por favor, completa todos los campos obligatorios.');
                 return;
             }
 
-            // Obtener la membresía seleccionada para calcular la fecha de expiración
             const membershipRef = doc(db, "memberships", membershipId);
             const membershipSnap = await getDoc(membershipRef);
             const membershipData = membershipSnap.data();
@@ -952,7 +968,6 @@
                 expirationDate = new Date(start.getTime() + membershipData.duration * 24 * 60 * 60 * 1000);
             }
             
-            // Lógica para guardar o actualizar el usuario
             if (userId) {
                 const userRef = doc(db, "users", userId);
                 await updateDoc(userRef, {
@@ -989,7 +1004,6 @@
                 document.getElementById('user-name').value = userData.name;
                 document.getElementById('user-email').value = userData.email;
                 document.getElementById('user-membership').value = userData.membership;
-                // Asignar una fecha de inicio ficticia para la edición
                 document.getElementById('user-start-date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('user-id-input').value = userData.userId;
                 document.getElementById('user-id-container').style.display = 'block';
@@ -1029,7 +1043,6 @@
                 `;
                 membershipsTableBody.appendChild(row);
 
-                // Asignar eventos de click
                 document.getElementById(`edit-membership-${doc.id}`).addEventListener('click', (e) => {
                     e.stopPropagation();
                     editMembership(doc.id);
@@ -1087,10 +1100,6 @@
         // =================================================================
         // DETALLES DEL USUARIO (MODAL)
         // =================================================================
-        /**
-         * Muestra un modal con los detalles completos de un usuario.
-         * @param {string} userId - El ID del documento del usuario en Firestore.
-         */
         async function showUserDetails(userId) {
             const modal = document.getElementById('user-details-modal');
             const userRef = doc(db, "users", userId);
@@ -1102,7 +1111,6 @@
                 const status = expirationDate && expirationDate > new Date() ? 'Activa' : 'Vencida';
                 const statusColor = status === 'Activa' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
 
-                // Llenar el modal con los datos del usuario
                 document.getElementById('modal-user-name').textContent = userData.name;
                 document.getElementById('modal-user-email').textContent = userData.email;
                 document.getElementById('modal-user-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
@@ -1116,7 +1124,6 @@
                 statusSpan.textContent = status;
                 statusSpan.className = `px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`;
 
-                // Manejar el clic en el botón de edición dentro del modal
                 document.getElementById('modal-edit-user-btn').onclick = () => {
                     closeUserDetailsModal();
                     editUser(userSnap.id);
@@ -1153,7 +1160,6 @@
         // MANEJO DE EVENTOS INICIALES
         // =================================================================
         document.addEventListener('DOMContentLoaded', () => {
-            // Navegación principal
             document.getElementById('welcome-login-btn').addEventListener('click', () => showScreen('login-screen'));
             document.getElementById('welcome-register-btn').addEventListener('click', () => showScreen('register-screen'));
             document.getElementById('login-back-btn').addEventListener('click', () => showScreen('welcome-screen'));
@@ -1168,10 +1174,8 @@
             document.getElementById('access-back-btn').addEventListener('click', () => showScreen('admin-dashboard'));
             document.getElementById('reports-back-btn').addEventListener('click', () => showScreen('admin-dashboard'));
             
-            // Cierre del modal de detalles de usuario
             document.getElementById('close-user-details-modal').addEventListener('click', closeUserDetailsModal);
 
-            // Gestión de usuarios
             document.getElementById('add-user-btn').addEventListener('click', () => {
                 showScreen('create-user-screen');
                 document.getElementById('create-user-title').textContent = 'Agregar Nuevo Usuario';
@@ -1185,12 +1189,10 @@
                 saveUser(userId);
             });
             
-            // Evento para el filtro de ordenamiento
             document.getElementById('sort-users-select').addEventListener('change', (e) => {
                 fetchUsers(e.target.value);
             });
             
-            // Gestión de membresías
             document.getElementById('add-membership-btn').addEventListener('click', () => {
                 showScreen('create-membership-screen');
                 document.getElementById('create-membership-title').textContent = 'Nueva Membresía';
@@ -1202,6 +1204,11 @@
                 const membershipId = document.getElementById('membership-doc-id').value;
                 saveMembership(membershipId);
             });
+
+             // Eventos de la barra de navegación del cliente
+            document.getElementById('nav-profile-btn').addEventListener('click', () => showScreen('user-profile-screen'));
+            document.getElementById('nav-routines-btn').addEventListener('click', () => showScreen('user-routines-screen'));
+            document.getElementById('routines-back-to-profile-btn').addEventListener('click', () => showScreen('user-profile-screen'));
         });
 
         // Register service worker for PWA
