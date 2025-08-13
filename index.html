@@ -264,12 +264,24 @@
                     </div>
                 </div>
                 
-                <div class="mb-6">
-                    <div class="relative rounded-md shadow-sm max-w-md">
+                <div class="mb-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                    <div class="relative rounded-md shadow-sm max-w-md w-full sm:w-auto">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
                         <input type="text" id="user-search" class="input-field block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Buscar usuarios...">
+                    </div>
+                    
+                    <div class="relative w-full sm:w-auto">
+                        <select id="sort-users-select" class="input-field block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white sm:text-sm appearance-none">
+                            <option value="id-asc">Ordenar por ID (menor a mayor)</option>
+                            <option value="id-desc">Ordenar por ID (mayor a menor)</option>
+                            <option value="name-asc">Ordenar por Nombre (A-Z)</option>
+                            <option value="name-desc">Ordenar por Nombre (Z-A)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
                     </div>
                 </div>
                 
@@ -334,6 +346,12 @@
                     <input type="hidden" id="user-doc-id">
                     <div class="bg-white shadow overflow-hidden rounded-lg p-6">
                         <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                            <!-- New field for userId -->
+                            <div class="sm:col-span-3" id="user-id-container" style="display: none;">
+                                <label for="user-id-input" class="block text-sm font-medium text-gray-700">ID del Usuario</label>
+                                <input type="number" id="user-id-input" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            <!-- Existing fields -->
                             <div class="sm:col-span-3">
                                 <label for="user-name" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
                                 <input type="text" id="user-name" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -769,10 +787,12 @@
                     email: email,
                     role: 'user',
                     membership: 'Ninguna',
-                    expiration: null
+                    expiration: null,
+                    // Agregando ID secuencial
+                    userId: await getNextUserId()
                 });
                 alert(`¡Bienvenido ${name}! Tu cuenta ha sido creada exitosamente. Inicia sesión para continuar.`);
-                showScreen('login-screen');
+                
             } catch (error) {
                 alert(`Error al registrarse: ${error.message}`);
             }
@@ -809,7 +829,9 @@
                         email: user.email,
                         role: 'user',
                         membership: 'Ninguna',
-                        expiration: null
+                        expiration: null,
+                        // Agregando ID secuencial
+                        userId: await getNextUserId()
                     });
                 }
             } catch (error) {
@@ -829,17 +851,41 @@
         // =================================================================
         // GESTIÓN DE USUARIOS
         // =================================================================
-        async function fetchUsers() {
+        async function getNextUserId() {
+            const usersCollection = collection(db, "users");
+            const userSnapshot = await getDocs(usersCollection);
+            let maxUserId = 0;
+            userSnapshot.forEach(doc => {
+                const user = doc.data();
+                if (user.userId && user.userId > maxUserId) {
+                    maxUserId = user.userId;
+                }
+            });
+            return maxUserId + 1;
+        }
+
+        async function fetchUsers(orderBy = 'id-asc') {
             const usersTableBody = document.getElementById('users-table-body');
             usersTableBody.innerHTML = '';
             
             const usersCollection = collection(db, "users");
             const userSnapshot = await getDocs(usersCollection);
-            
-            let i = 1;
+            const users = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            userSnapshot.forEach(doc => {
-                const user = doc.data();
+            // Lógica de ordenamiento
+            if (orderBy === 'id-asc') {
+                users.sort((a, b) => (a.userId || 0) - (b.userId || 0));
+            } else if (orderBy === 'id-desc') {
+                users.sort((a, b) => (b.userId || 0) - (a.userId || 0));
+            } else if (orderBy === 'name-asc') {
+                users.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (orderBy === 'name-desc') {
+                users.sort((a, b) => b.name.localeCompare(a.name));
+            }
+
+            users.forEach(userDoc => {
+                const user = userDoc;
+                const docId = userDoc.id;
                 const expirationDate = user.expiration ? new Date(user.expiration.seconds * 1000) : null;
                 const status = expirationDate && expirationDate > new Date() ? 'Activa' : 'Vencida';
                 const statusColor = status === 'Activa' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
@@ -847,7 +893,7 @@
                 const row = document.createElement('tr');
                 row.classList.add('cursor-pointer', 'hover:bg-gray-100', 'transition-colors');
                 row.innerHTML = `
-                    <td data-label="ID">${i.toString().padStart(3, '0')}</td>
+                    <td data-label="ID">${user.userId ? user.userId.toString().padStart(3, '0') : 'N/A'}</td>
                     <td data-label="Nombre">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
@@ -862,24 +908,22 @@
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${status}</span>
                     </td>
                     <td data-label="Acciones">
-                        <button id="edit-user-${doc.id}" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
-                        <button id="delete-user-${doc.id}" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                        <button id="edit-user-${docId}" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
+                        <button id="delete-user-${docId}" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
                 usersTableBody.appendChild(row);
                 
                 // Asignar eventos de click a los nuevos elementos
-                row.addEventListener('click', () => showUserDetails(doc.id));
-                document.getElementById(`edit-user-${doc.id}`).addEventListener('click', (e) => {
+                row.addEventListener('click', () => showUserDetails(docId));
+                document.getElementById(`edit-user-${docId}`).addEventListener('click', (e) => {
                     e.stopPropagation();
-                    editUser(doc.id);
+                    editUser(docId);
                 });
-                document.getElementById(`delete-user-${doc.id}`).addEventListener('click', (e) => {
+                document.getElementById(`delete-user-${docId}`).addEventListener('click', (e) => {
                     e.stopPropagation();
-                    deleteUser(doc.id);
+                    deleteUser(docId);
                 });
-
-                i++;
             });
         }
         
@@ -889,6 +933,7 @@
             const password = document.getElementById('user-password').value;
             const membershipId = document.getElementById('user-membership').value;
             const startDate = document.getElementById('user-start-date').value;
+            const manualUserId = document.getElementById('user-id-input').value;
             
             // Validar campos
             if (!name || !email || !membershipId || !startDate) {
@@ -914,7 +959,8 @@
                     name: name,
                     email: email,
                     membership: membershipData.name,
-                    expiration: expirationDate
+                    expiration: expirationDate,
+                    userId: parseInt(manualUserId)
                 });
                 alert('Usuario actualizado exitosamente');
             } else {
@@ -923,7 +969,8 @@
                     email: email,
                     membership: membershipData.name,
                     expiration: expirationDate,
-                    role: 'user'
+                    role: 'user',
+                    userId: await getNextUserId()
                 });
                 alert('Usuario creado exitosamente');
             }
@@ -944,6 +991,8 @@
                 document.getElementById('user-membership').value = userData.membership;
                 // Asignar una fecha de inicio ficticia para la edición
                 document.getElementById('user-start-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('user-id-input').value = userData.userId;
+                document.getElementById('user-id-container').style.display = 'block';
             } else {
                 alert("No se encontró el usuario.");
             }
@@ -1127,12 +1176,18 @@
                 showScreen('create-user-screen');
                 document.getElementById('create-user-title').textContent = 'Agregar Nuevo Usuario';
                 document.getElementById('create-user-form').reset();
+                document.getElementById('user-id-container').style.display = 'none';
             });
             document.getElementById('cancel-user-btn').addEventListener('click', () => showScreen('admin-dashboard'));
-            document.getElementById('save-user-btn').addEventListener('click', (e) => {
+            document.getElementById('create-user-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const userId = document.getElementById('user-doc-id').value;
                 saveUser(userId);
+            });
+            
+            // Evento para el filtro de ordenamiento
+            document.getElementById('sort-users-select').addEventListener('change', (e) => {
+                fetchUsers(e.target.value);
             });
             
             // Gestión de membresías
@@ -1142,7 +1197,7 @@
                 document.getElementById('create-membership-form').reset();
             });
             document.getElementById('cancel-membership-btn').addEventListener('click', () => showScreen('membership-management-screen'));
-            document.getElementById('save-membership-btn').addEventListener('click', (e) => {
+            document.getElementById('create-membership-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const membershipId = document.getElementById('membership-doc-id').value;
                 saveMembership(membershipId);
