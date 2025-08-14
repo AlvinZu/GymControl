@@ -14,6 +14,12 @@
     <link rel="manifest" href="manifest.json">
   
     <style>
+      
+      /* Ajuste para la barra de navegación fija */
+body.with-admin-navbar {
+    padding-bottom: 5rem;
+}
+      
         /* Custom CSS for transitions and animations */
         .screen {
             display: none;
@@ -312,7 +318,7 @@
         </div>
 
         <!-- Admin Navigation Bar -->
-        <div class="bg-white border-t border-gray-200 py-3 px-4 fixed bottom-0 left-0 right-0 shadow-lg" id="admin-navbar" style="display: none;">
+        <div class="bg-white border-t border-gray-300 py-3 px-4 fixed bottom-0 left-0 right-0 shadow-lg z-50" id="admin-navbar" style="display: none;">
             <div class="flex justify-around max-w-md mx-auto">
                 <button id="nav-users-btn" class="flex flex-col items-center text-indigo-600">
                     <i class="fas fa-users text-xl"></i>
@@ -686,28 +692,50 @@
         // FUNCIONES DE NAVEGACIÓN Y LÓGICA GENERAL
         // =================================================================
         function showScreen(screenId) {
+            // Oculta todas las pantallas y remueve la clase de animación
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.style.display = 'none';
                 screen.classList.remove('active-screen');
             });
+            
+            // Muestra la pantalla actual y añade la clase de animación
             document.getElementById(screenId).style.display = 'flex';
             document.getElementById(screenId).classList.add('active-screen');
 
             const clientNavbar = document.getElementById('client-navbar');
             const adminNavbar = document.getElementById('admin-navbar');
 
-            if (screenId === 'user-profile-screen' || screenId === 'user-routines-screen') {
+            // Definimos todas las pantallas del panel de administrador
+            const adminScreens = [
+                'admin-dashboard',
+                'membership-management-screen',
+                'access-control-screen',
+                'reports-screen',
+                'create-user-screen',
+                'create-membership-screen'
+            ];
+
+            // Definimos todas las pantallas del usuario cliente
+            const clientScreens = [
+                'user-profile-screen',
+                'user-routines-screen'
+            ];
+
+            // Lógica para mostrar la barra de navegación correcta
+            if (adminScreens.includes(screenId)) {
+                adminNavbar.style.display = 'block';
+                clientNavbar.style.display = 'none';
+                // Lógica de carga de datos (se mantiene aquí)
+                if (screenId === 'admin-dashboard') {
+                    fetchUsers();
+                } else if (screenId === 'membership-management-screen') {
+                    fetchMemberships();
+                }
+            } else if (clientScreens.includes(screenId)) {
                 clientNavbar.style.display = 'block';
                 adminNavbar.style.display = 'none';
-            } else if (screenId === 'admin-dashboard') {
-                adminNavbar.style.display = 'block';
-                clientNavbar.style.display = 'none';
-                fetchUsers();
-            } else if (screenId === 'membership-management-screen') {
-                adminNavbar.style.display = 'block';
-                clientNavbar.style.display = 'none';
-                fetchMemberships();
             } else {
+                // Ocultar ambas barras en pantallas de autenticación
                 clientNavbar.style.display = 'none';
                 adminNavbar.style.display = 'none';
             }
