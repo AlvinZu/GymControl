@@ -614,64 +614,73 @@ body.with-admin-navbar {
         <!-- Modal de Detalles de Usuario (nuevo) -->
         <div id="user-details-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md animate-fadeIn flex flex-col max-h-[90vh]">
-                <div class="flex justify-between items-center border-b px-6 py-4">
-                    <h3 class="text-lg font-semibold">Detalles del Usuario</h3>
-                    <button id="close-user-details-modal" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
+                <div class="flex-1 overflow-y-auto custom-scroll">
+                    <div class="flex justify-between items-center border-b px-6 py-4">
+                        <h3 class="text-lg font-semibold">Detalles del Usuario</h3>
+                        <button id="close-user-details-modal" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex flex-col sm:flex-row items-center mb-6">
+                            <div class="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
+                                <div id="modal-user-initials" class="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <span class="text-indigo-600 text-2xl font-bold">AD</span>
+                                </div>
+                            </div>
+                            <div class="text-center sm:text-left">
+                                <h2 id="modal-user-name" class="text-2xl font-bold text-gray-900">Administrador</h2>
+                                <p id="modal-user-email" class="text-sm text-gray-500">admin@gympro.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-5">
+                            <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                                <div class="sm:col-span-1">
+                                    <dt class="text-sm font-medium text-gray-500">Teléfono</dt>
+                                    <dd id="modal-user-phone" class="mt-1 text-sm text-gray-900">N/A</dd>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <dt class="text-sm font-medium text-gray-500">Fecha de Nacimiento</dt>
+                                    <dd id="modal-user-birthdate" class="mt-1 text-sm text-gray-900">N/A</dd>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <dt class="text-sm font-medium text-gray-500">Dirección</dt>
+                                    <dd id="modal-user-address" class="mt-1 text-sm text-gray-900">N/A</dd>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <dt class="text-sm font-medium text-gray-500">Tipo de Membresía</dt>
+                                    <dd id="modal-user-membership" class="mt-1 text-sm text-gray-900">N/A</dd>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <dt class="text-sm font-medium text-gray-500">Fecha de Vencimiento</dt>
+                                    <dd id="modal-user-expiration" class="mt-1 text-sm text-gray-900">N/A</dd>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <dt class="text-sm font-medium text-gray-500">Estado de Membresía</dt>
+                                    <dd id="modal-user-status" class="mt-1">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Vencida</span>
+                                    </dd>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <dt class="text-sm font-medium text-gray-500">Historial de Membresías</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">
+                                        <ul id="modal-user-transactions-list" class="space-y-2">
+                                            </ul>
+                                        <p id="no-transactions-message" class="text-gray-500 text-sm mt-2" style="display: none;">No se encontraron transacciones.</p>
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end border-t px-6 py-4">
+                    <button id="modal-edit-user-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <i class="fas fa-edit mr-2"></i> Editar Usuario
                     </button>
                 </div>
-                <div class="p-6 flex-1 overflow-y-auto custom-scroll">
-                    <div class="flex flex-col sm:flex-row items-center mb-6">
-                        <div class="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
-                            <div id="modal-user-initials" class="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center">
-                                <span class="text-indigo-600 text-2xl font-bold">JD</span>
-                            </div>
-                        </div>
-                        <div class="text-center sm:text-left">
-                            <h2 id="modal-user-name" class="text-2xl font-bold text-gray-900">Juan Domínguez</h2>
-                            <p id="modal-user-email" class="text-sm text-gray-500">juan@example.com</p>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-gray-200 pt-5">
-                        <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
-                            <div class="sm:col-span-1">
-                                <dt class="text-sm font-medium text-gray-500">Teléfono</dt>
-                                <dd id="modal-user-phone" class="mt-1 text-sm text-gray-900">N/A</dd>
-                            </div>
-                            <div class="sm:col-span-1">
-                                <dt class="text-sm font-medium text-gray-500">Fecha de Nacimiento</dt>
-                                <dd id="modal-user-birthdate" class="mt-1 text-sm text-gray-900">N/A</dd>
-                            </div>
-                            <div class="sm:col-span-2">
-                                <dt class="text-sm font-medium text-gray-500">Dirección</dt>
-                                <dd id="modal-user-address" class="mt-1 text-sm text-gray-900">N/A</dd>
-                            </div>
-                            <div class="sm:col-span-1">
-                                <dt class="text-sm font-medium text-gray-500">Tipo de Membresía</dt>
-                                <dd id="modal-user-membership" class="mt-1 text-sm text-gray-900">N/A</dd>
-                            </div>
-                            <div class="sm:col-span-1">
-                                <dt class="text-sm font-medium text-gray-500">Fecha de Vencimiento</dt>
-                                <dd id="modal-user-expiration" class="mt-1 text-sm text-gray-900">N/A</dd>
-                            </div>
-                            <div class="sm:col-span-2">
-                                <dt class="text-sm font-medium text-gray-500">Estado de Membresía</dt>
-                                <dd id="modal-user-status" class="mt-1">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Vencida</span>
-                                </dd>
-                            </div>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end border-t px-6 py-4">
-                <button id="modal-edit-user-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    <i class="fas fa-edit mr-2"></i> Editar Usuario
-                </button>
             </div>
         </div>
-    </div>
 
     
 
@@ -1038,15 +1047,15 @@ function filterUsers(searchTerm) {
     renderUsers(filteredUsers, orderBy);
 }
         
-        async function saveUser(userId = null) {
+    async function saveUser(userId = null) {
             const name = document.getElementById('user-name').value;
             const email = document.getElementById('user-email').value;
             const password = document.getElementById('user-password').value;
             const membershipId = document.getElementById('user-membership').value;
-            const startDate = document.getElementById('user-start-date').value;
+            const startDateInput = document.getElementById('user-start-date').value;
             const manualUserId = document.getElementById('user-id-input').value;
-            
-            if (!name || !email || !membershipId || !startDate) {
+
+            if (!name || !email || !membershipId || !startDateInput) {
                 alert('Por favor, completa todos los campos obligatorios.');
                 return;
             }
@@ -1055,36 +1064,78 @@ function filterUsers(searchTerm) {
             const membershipSnap = await getDoc(membershipRef);
             const membershipData = membershipSnap.data();
 
-            let expirationDate = null;
-            if (membershipData && membershipData.duration) {
-                const start = new Date(startDate);
-                expirationDate = new Date(start.getTime() + membershipData.duration * 24 * 60 * 60 * 1000);
-            }
-            
+            let newExpirationDate = null;
+            let effectiveStartDate;
+            let userDocId;
+
             if (userId) {
+                // Modo Edición: Obtener el usuario actual
                 const userRef = doc(db, "users", userId);
+                const userSnap = await getDoc(userRef);
+                const userData = userSnap.data();
+                userDocId = userId;
+                
+                // Determinar la fecha de inicio de la nueva membresía
+                const oldExpirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (oldExpirationDate && oldExpirationDate > today) {
+                    // Si la membresía actual está activa, la nueva empieza cuando la vieja vence.
+                    effectiveStartDate = new Date(oldExpirationDate.getTime());
+                    effectiveStartDate.setHours(0, 0, 0, 0); 
+                } else {
+                    // Si la membresía ya venció o no existe, la nueva empieza hoy.
+                    effectiveStartDate = new Date(startDateInput);
+                }
+
+                // Calcular la nueva fecha de expiración
+                newExpirationDate = new Date(effectiveStartDate.getTime() + membershipData.duration * 24 * 60 * 60 * 1000);
+
+                // Actualizar el documento de Firestore
                 await updateDoc(userRef, {
                     name: name,
                     email: email,
                     membership: membershipData.name,
-                    expiration: expirationDate,
+                    expiration: newExpirationDate,
                     userId: parseInt(manualUserId)
                 });
                 alert('Usuario actualizado exitosamente');
             } else {
-                await addDoc(collection(db, "users"), {
+                // Modo Creación: Usar la fecha de inicio proporcionada
+                const start = new Date(startDateInput);
+                newExpirationDate = new Date(start.getTime() + membershipData.duration * 24 * 60 * 60 * 1000);
+                
+                const newDocRef = await addDoc(collection(db, "users"), {
                     name: name,
                     email: email,
                     membership: membershipData.name,
-                    expiration: expirationDate,
+                    expiration: newExpirationDate,
                     role: 'user',
                     userId: await getNextUserId()
                 });
+                userDocId = newDocRef.id;
                 alert('Usuario creado exitosamente');
             }
+            
+            // ===============================================
+            // NUEVO: Guardar la transacción
+            // ===============================================
+            const transactionsCollection = collection(db, "transactions");
+            await addDoc(transactionsCollection, {
+                userId: userDocId, // Usar el ID del documento de usuario
+                name: name,
+                membershipName: membershipData.name,
+                duration: membershipData.duration,
+                price: membershipData.price,
+                paymentDate: new Date(),
+                expirationDate: newExpirationDate
+            });
+
             showScreen('admin-dashboard');
             fetchUsers();
         }
+
 
         async function editUser(userId) {
             showScreen('create-user-screen');
@@ -1199,13 +1250,14 @@ function filterUsers(searchTerm) {
             const modal = document.getElementById('user-details-modal');
             const userRef = doc(db, "users", userId);
             const userSnap = await getDoc(userRef);
-
+            
             if (userSnap.exists()) {
                 const userData = userSnap.data();
                 const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
                 const status = expirationDate && expirationDate > new Date() ? 'Activa' : 'Vencida';
                 const statusColor = status === 'Activa' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
 
+                // Poblar la información del usuario
                 document.getElementById('modal-user-name').textContent = userData.name;
                 document.getElementById('modal-user-email').textContent = userData.email;
                 document.getElementById('modal-user-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
@@ -1219,6 +1271,35 @@ function filterUsers(searchTerm) {
                 statusSpan.textContent = status;
                 statusSpan.className = `px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`;
 
+                // ===============================================
+                // NUEVO: Cargar y mostrar el historial de transacciones
+                // ===============================================
+                const transactionsList = document.getElementById('modal-user-transactions-list');
+                const noTransactionsMessage = document.getElementById('no-transactions-message');
+                transactionsList.innerHTML = ''; // Limpiar la lista
+                noTransactionsMessage.style.display = 'none';
+
+                const transactionsCollection = collection(db, "transactions");
+                const q = query(transactionsCollection, where("userId", "==", userId));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    noTransactionsMessage.style.display = 'block';
+                } else {
+                    querySnapshot.forEach(transactionDoc => {
+                        const transactionData = transactionDoc.data();
+                        const paymentDate = transactionData.paymentDate ? new Date(transactionData.paymentDate.seconds * 1000).toLocaleDateString('es-ES') : 'N/A';
+                        
+                        const listItem = document.createElement('li');
+                        listItem.className = 'border-b last:border-b-0 py-2';
+                        listItem.innerHTML = `
+                            <p class="font-semibold">${transactionData.membershipName}</p>
+                            <p class="text-xs text-gray-500">Pagado: ${paymentDate}</p>
+                        `;
+                        transactionsList.appendChild(listItem);
+                    });
+                }
+                
                 document.getElementById('modal-edit-user-btn').onclick = () => {
                     closeUserDetailsModal();
                     editUser(userSnap.id);
