@@ -452,15 +452,19 @@ body.with-admin-navbar {
             </div>
             
             <div id="access-result-container" class="mt-8 text-center animate-fadeIn" style="display: none;">
-                <div id="access-result-icon" class="text-6xl mb-4"></div>
-                <h3 id="access-result-title" class="text-3xl font-bold mb-2"></h3>
-                <p id="access-result-message" class="text-lg text-gray-600"></p>
-                <div id="access-user-info" class="mt-6 p-4 bg-gray-100 rounded-xl hidden">
-                    <p class="text-md text-gray-800"><span class="font-semibold">Nombre:</span> <span id="access-user-name"></span></p>
-                    <p class="text-md text-gray-800"><span class="font-semibold">Membresía:</span> <span id="access-user-membership"></span></p>
-                    <p class="text-md text-gray-800"><span class="font-semibold">Vence:</span> <span id="access-user-expiration"></span></p>
-                </div>
-            </div>
+    <div id="access-result-icon" class="text-6xl mb-4"></div>
+    <h3 id="access-result-title" class="text-3xl font-bold mb-2"></h3>
+    <p id="access-result-message" class="text-lg text-gray-600"></p>
+    <div id="access-user-info" class="mt-6 p-4 bg-gray-100 rounded-xl hidden">
+        <p class="text-md text-gray-800"><span class="font-semibold">Nombre:</span> <span id="access-user-name"></span></p>
+        <p class="text-md text-gray-800"><span class="font-semibold">Membresía:</span> <span id="access-user-membership"></span></p>
+        <p class="text-md text-gray-800"><span class="font-semibold">Vence:</span> <span id="access-user-expiration"></span></p>
+    </div>
+    
+    <button id="manage-membership-btn" class="btn-primary mt-6 w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
+        <i class="fas fa-edit mr-2"></i> Gestionar Membresía
+    </button>
+</div>
         </div>
     </div>
 </div>
@@ -1098,6 +1102,8 @@ function filterUsers(searchTerm) {
             } else {
                 alert("No se encontró el usuario.");
             }
+          // NUEVA LÍNEA: Llenar el select de membresías
+            await populateMembershipOptions('user-membership');
         }
         
         async function deleteUser(userId) {
@@ -1245,9 +1251,13 @@ function filterUsers(searchTerm) {
         }
       
       
-// =================================================================
+        // =================================================================
         // CONTROL DE ACCESO
         // =================================================================
+        // Variable global para almacenar el ID del usuario actual en el control de acceso
+let currentAccessUserId = null;
+
+      
         async function checkUserAccess(userId) {
             const accessResultContainer = document.getElementById('access-result-container');
             const accessResultIcon = document.getElementById('access-result-icon');
@@ -1290,6 +1300,9 @@ function filterUsers(searchTerm) {
                 const userDoc = querySnapshot.docs[0];
                 const userData = userDoc.data();
                 
+                // Guardar el ID del documento para su posterior uso
+    currentAccessUserId = userDoc.id; 
+              
                 // Verificar membresía
                 const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
                 const now = new Date();
@@ -1454,6 +1467,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const userId = e.target.value.trim();
             checkUserAccess(userId);
             e.target.value = ''; // Opcional: limpiar después de buscar
+        }
+    });
+  
+    // Evento para gestionar la membresía desde la pantalla de acceso
+    document.getElementById('manage-membership-btn').addEventListener('click', () => {
+        if (currentAccessUserId) {
+            // Llamamos a la función editUser con el ID del documento
+            editUser(currentAccessUserId);
         }
     });
 
