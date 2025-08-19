@@ -456,6 +456,7 @@ body.with-admin-navbar {
     <h3 id="access-result-title" class="text-3xl font-bold mb-2"></h3>
     <p id="access-result-message" class="text-lg text-gray-600"></p>
     <div id="access-user-info" class="mt-6 p-4 bg-gray-100 rounded-xl hidden">
+        <p class="text-md text-gray-800"><span class="font-semibold">ID:</span> <span id="access-user-id"></span></p>
         <p class="text-md text-gray-800"><span class="font-semibold">Nombre:</span> <span id="access-user-name"></span></p>
         <p class="text-md text-gray-800"><span class="font-semibold">Membresía:</span> <span id="access-user-membership"></span></p>
         <p class="text-md text-gray-800"><span class="font-semibold">Vence:</span> <span id="access-user-expiration"></span></p>
@@ -1309,6 +1310,7 @@ let currentAccessUserId = null;
                 const isMembershipActive = expirationDate && expirationDate > now;
                 
                 // Mostrar información del usuario
+              document.getElementById('access-user-id').textContent = userData.userId.toString().padStart(3, '0') || 'N/A';
                 document.getElementById('access-user-name').textContent = userData.name || 'N/A';
                 document.getElementById('access-user-membership').textContent = userData.membership || 'N/A';
                 document.getElementById('access-user-expiration').textContent = expirationDate ? 
