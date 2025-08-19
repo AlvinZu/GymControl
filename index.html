@@ -1291,12 +1291,35 @@ function filterUsers(searchTerm) {
                         const paymentDate = transactionData.paymentDate ? new Date(transactionData.paymentDate.seconds * 1000).toLocaleDateString('es-ES') : 'N/A';
                         
                         const listItem = document.createElement('li');
-                        listItem.className = 'border-b last:border-b-0 py-2';
+                        listItem.className = 'border-b last:border-b-0 py-2 group';
                         listItem.innerHTML = `
-                            <p class="font-semibold">${transactionData.membershipName}</p>
-                            <p class="text-xs text-gray-500">Pagado: ${paymentDate}</p>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-semibold">${transactionData.membershipName}</p>
+                                    <p class="text-xs text-gray-500">Pagado: ${paymentDate}</p>
+                                </div>
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button class="edit-transaction-btn text-indigo-600 hover:text-indigo-900 mr-2" data-id="${transactionDoc.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="delete-transaction-btn text-red-600 hover:text-red-900" data-id="${transactionDoc.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
                         `;
                         transactionsList.appendChild(listItem);
+                        
+                        // Agregar event listeners a los nuevos botones
+                        listItem.querySelector('.edit-transaction-btn').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            editTransaction(transactionDoc.id);
+                        });
+                        
+                        listItem.querySelector('.delete-transaction-btn').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            deleteTransaction(transactionDoc.id);
+                        });
                     });
                 }
                 
@@ -1313,6 +1336,52 @@ function filterUsers(searchTerm) {
 
         function closeUserDetailsModal() {
             document.getElementById('user-details-modal').classList.add('hidden');
+        }
+
+        async function deleteTransaction(transactionId) {
+            if (confirm('¿Estás seguro de eliminar este registro de pago?')) {
+                try {
+                    await deleteDoc(doc(db, "transactions", transactionId));
+                    alert('Registro de pago eliminado');
+                    // Recargar los detalles del usuario para actualizar la vista
+                    if (currentAccessUserId) {
+                        showUserDetails(currentAccessUserId);
+                    }
+                } catch (error) {
+                    alert('Error al eliminar el registro: ' + error.message);
+                }
+            }
+        }
+
+        async function editTransaction(transactionId) {
+            const transactionRef = doc(db, "transactions", transactionId);
+            const transactionSnap = await getDoc(transactionRef);
+            
+            if (transactionSnap.exists()) {
+                const transactionData = transactionSnap.data();
+                
+                // Aquí puedes implementar un modal de edición similar al de usuarios/membresías
+                // Por ahora mostraremos un prompt simple para editar la fecha de pago
+                const newPaymentDate = prompt('Nueva fecha de pago (YYYY-MM-DD):', 
+                    transactionData.paymentDate ? 
+                    new Date(transactionData.paymentDate.seconds * 1000).toISOString().split('T')[0] : 
+                    new Date().toISOString().split('T')[0]);
+                
+                if (newPaymentDate) {
+                    try {
+                        await updateDoc(transactionRef, {
+                            paymentDate: new Date(newPaymentDate)
+                        });
+                        alert('Registro de pago actualizado');
+                        // Recargar los detalles del usuario
+                        if (currentAccessUserId) {
+                            showUserDetails(currentAccessUserId);
+                        }
+                    } catch (error) {
+                        alert('Error al actualizar el registro: ' + error.message);
+                    }
+                }
+            }
         }
         
         async function populateMembershipOptions(selectId) {
