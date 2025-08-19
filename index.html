@@ -1529,6 +1529,23 @@ transactionsList.appendChild(listItem);
         }
       
       
+      // NUEVA FUNCIÓN PARA RESETEAR LA PANTALLA DE ACCESO
+function resetAccessControlUI() {
+    const accessResultContainer = document.getElementById('access-result-container');
+    const accessMainContainer = document.querySelector('#access-control-screen > div > div');
+    
+    // Ocultar el resultado y limpiar el campo si es necesario
+    accessResultContainer.style.display = 'none';
+    
+    // Eliminar todos los colores de estado
+    accessMainContainer.classList.remove('bg-red-100', 'bg-green-100', 'bg-yellow-100', 'border-red-400', 'border-green-400', 'border-yellow-400');
+    
+    // Asegurarse de que el fondo vuelva a ser blanco
+    accessMainContainer.classList.add('bg-white');
+}
+
+      
+      
         // =================================================================
         // CONTROL DE ACCESO
         // =================================================================
@@ -1614,37 +1631,41 @@ let currentAccessUserId = null;
         }
 
         function showAccessResult(type, title, message) {
-            const accessResultContainer = document.getElementById('access-result-container');
-            const accessResultIcon = document.getElementById('access-result-icon');
-            const accessResultTitle = document.getElementById('access-result-title');
-            const accessResultMessage = document.getElementById('access-result-message');
-            const accessMainContainer = document.querySelector('#access-control-screen > div > div');
-            
-            accessResultContainer.style.display = 'block';
-            
-            // Resetear todos los estilos primero
-            accessMainContainer.classList.remove('bg-red-100', 'bg-green-100', 'bg-yellow-100', 'border-red-400', 'border-green-400', 'border-yellow-400');
-            
-            if (type === 'success') {
-                accessResultIcon.innerHTML = `<i class="fas fa-circle-check text-green-600"></i>`;
-                accessResultIcon.className = 'text-green-600';
-                accessMainContainer.classList.add('bg-green-100', 'border-green-400');
-            } else if (type === 'warning') {
-                accessResultIcon.innerHTML = `<i class="fas fa-exclamation-triangle text-yellow-600"></i>`;
-                accessResultIcon.className = 'text-yellow-600';
-                accessMainContainer.classList.add('bg-yellow-100', 'border-yellow-400');
-            } else {
-                accessResultIcon.innerHTML = `<i class="fas fa-exclamation-circle text-red-600"></i>`;
-                accessResultIcon.className = 'text-red-600';
-                accessMainContainer.classList.add('bg-red-100', 'border-red-400');
-            }
-            
-            // Agregar animación y bordes
-            accessMainContainer.classList.add('border-2', 'transition-colors', 'duration-500');
-            
-            accessResultTitle.textContent = title;
-            accessResultMessage.textContent = message;
-        }
+    const accessResultContainer = document.getElementById('access-result-container');
+    const accessResultIcon = document.getElementById('access-result-icon');
+    const accessResultTitle = document.getElementById('access-result-title');
+    const accessResultMessage = document.getElementById('access-result-message');
+    const accessMainContainer = document.querySelector('#access-control-screen > div > div');
+    
+    // Hacemos visible el contenedor de resultados
+    accessResultContainer.style.display = 'block';
+    
+    // CORRECCIÓN: Ya no se llama a resetAccessControlUI() desde aquí.
+    
+    // Limpiamos únicamente las clases de color y borde del resultado anterior
+    accessMainContainer.classList.remove(
+        'bg-red-100', 'bg-green-100', 'bg-yellow-100',
+        'border-red-400', 'border-green-400', 'border-yellow-400'
+    );
+    // Quitamos el fondo blanco para permitir que el nuevo color se aplique
+    accessMainContainer.classList.remove('bg-white');
+
+    if (type === 'success') {
+        accessResultIcon.innerHTML = `<i class="fas fa-circle-check text-green-600"></i>`;
+        accessMainContainer.classList.add('bg-green-100', 'border-green-400');
+    } else if (type === 'warning') {
+        accessResultIcon.innerHTML = `<i class="fas fa-exclamation-triangle text-yellow-600"></i>`;
+        accessMainContainer.classList.add('bg-yellow-100', 'border-yellow-400');
+    } else {
+        accessResultIcon.innerHTML = `<i class="fas fa-exclamation-circle text-red-600"></i>`;
+        accessMainContainer.classList.add('bg-red-100', 'border-red-400');
+    }
+    
+    accessMainContainer.classList.add('border-2', 'transition-colors', 'duration-500');
+    
+    accessResultTitle.textContent = title;
+    accessResultMessage.textContent = message;
+}
       
         
 // =================================================================
@@ -1732,12 +1753,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Evento de la pantalla de Control de Acceso (CORREGIDO)
     document.getElementById('access-search-input').addEventListener('input', (e) => {
-        const userId = e.target.value.trim();
-        // Buscar automáticamente cuando se ingresa un código de 3+ dígitos
-        if (userId.length >= 3) {
-            checkUserAccess(userId);
-        }
-    });
+    const userId = e.target.value.trim();
+    if (userId.length >= 3) {
+        checkUserAccess(userId);
+    } else if (userId.length === 0) {
+        // Si el campo se vacía, reseteamos la interfaz
+        resetAccessControlUI();
+    }
+});
 
     // También agregar para escanear códigos de barras con Enter
     document.getElementById('access-search-input').addEventListener('keypress', (e) => {
