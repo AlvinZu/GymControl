@@ -302,18 +302,14 @@ body.with-admin-navbar {
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="users-table-body" class="bg-white divide-y divide-gray-200">
+                            <tbody id="users-table-body" class="bg-yellow-100 divide-y divide-gray-200">
                                 <!-- Filas de usuarios se cargarán aquí desde Firestore -->
                             </tbody>
                         </table>
                     </div>
                 </div>
                 
-                <div class="mt-6 flex justify-between items-center">
-                    <button id="manage-memberships-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                        Gestionar Membresías
-                    </button>
-                </div>
+                
             </div>
         </div>
 
@@ -409,9 +405,9 @@ body.with-admin-navbar {
                         <button id="add-membership-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
                             <i class="fas fa-plus mr-2"></i> Nueva Membresía
                         </button>
-                        <button id="memberships-back-to-users-btn" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                            Volver a Usuarios
-                        </button>
+                        <button id="memberships-back-to-users-btn" title="Volver a Usuarios" class="btn-primary bg-gray-200 text-gray-700 w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+        <i class="fas fa-arrow-left text-xl"></i>
+    </button>
                     </div>
                 </div>
                 
@@ -426,7 +422,7 @@ body.with-admin-navbar {
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="memberships-table-body" class="bg-white divide-y divide-gray-200">
+                            <tbody id="memberships-table-body" class="bg-green-100 divide-y divide-gray-200">
                                 <!-- Filas de membresías se cargarán aquí desde Firestore -->
                             </tbody>
                         </table>
@@ -720,6 +716,31 @@ body.with-admin-navbar {
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+      
+      
+// =================================================================
+// FUNCIÓN AUXILIAR PARA FORMATEAR FECHAS
+// =================================================================
+function formatDateToLongString(date) {
+    // Si la fecha no existe, regresa 'N/A'
+    if (!date) return 'N/A';
+
+    // Opciones para el formato de fecha en español
+    const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    };
+    
+    // Convierte la fecha a un string legible y con mayúscula inicial
+    let formattedDate = new Intl.DateTimeFormat('es-MX', options).format(date);
+    formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+    
+    // Reemplaza "de" por diagonales para coincidir con tu ejemplo
+    return formattedDate.replace(/ de /g, '/');
+}
+      
 
         // =================================================================
         // FUNCIONES DE NAVEGACIÓN Y LÓGICA GENERAL
@@ -793,52 +814,59 @@ body.with-admin-navbar {
                 if (userRole === 'admin') {
                     showScreen('admin-dashboard');
                 } else {
-                    showScreen('user-profile-screen');
-                    document.getElementById('user-profile-name').textContent = userData.name;
-                    document.getElementById('user-profile-email').textContent = userData.email;
-                    document.getElementById('user-profile-id').textContent = userData.userId ? userData.userId.toString().padStart(3, '0') : 'N/A';
-                    document.getElementById('user-profile-membership').textContent = userData.membership;
-                    document.getElementById('user-profile-expiration').textContent = userData.expiration ? new Date(userData.expiration.seconds * 1000).toLocaleDateString('es-ES') : 'N/A';
-                    document.getElementById('user-profile-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
-                    
-                    // Lógica para la barra de progreso
-                    const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
-                    const currentDate = new Date();
-                    const daysRemaining = expirationDate ? Math.ceil((expirationDate - currentDate) / (1000 * 60 * 60 * 24)) : 0;
-                    
-                    const progressBar = document.getElementById('user-progress-bar');
-                    const renewalMessage = document.getElementById('renewal-message');
-                    const daysRemainingText = document.getElementById('days-remaining');
+    showScreen('user-profile-screen');
+    
+    // CORRECCIÓN: Declaramos la fecha UNA SOLA VEZ aquí al principio.
+    const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
 
-                    daysRemainingText.textContent = daysRemaining > 0 ? daysRemaining : 0;
-                    
-                    let barColor = 'bg-gray-200';
-                    let barWidth = '0%';
-                    let messageText = '';
+    document.getElementById('user-profile-name').textContent = userData.name;
+    document.getElementById('user-profile-email').textContent = userData.email;
+    document.getElementById('user-profile-id').textContent = userData.userId ? userData.userId.toString().padStart(3, '0') : 'N/A';
+    document.getElementById('user-profile-membership').textContent = userData.membership;
+    
+    // 1. Usamos la variable y la nueva función para mostrar la fecha formateada.
+    document.getElementById('user-profile-expiration').textContent = formatDateToLongString(expirationDate);
+    
+    document.getElementById('user-profile-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
+    
+    // Lógica para la barra de progreso
+    const currentDate = new Date();
+    // 2. REUTILIZAMOS la misma variable 'expirationDate' que ya declaramos arriba.
+    const daysRemaining = expirationDate ? Math.ceil((expirationDate - currentDate) / (1000 * 60 * 60 * 24)) : 0;
+    
+    const progressBar = document.getElementById('user-progress-bar');
+    const renewalMessage = document.getElementById('renewal-message');
+    const daysRemainingText = document.getElementById('days-remaining');
 
-                    if (daysRemaining > 5) {
-                        barColor = 'bg-green-500';
-                        barWidth = '100%';
-                    } else if (daysRemaining > 0 && daysRemaining <= 5) {
-                        barColor = 'bg-yellow-500';
-                        barWidth = `${(daysRemaining / 5) * 100}%`;
-                    } else {
-                        barColor = 'bg-red-500';
-                        barWidth = '0%';
-                        if (expirationDate) {
-                            messageText = 'Renueva tu membresía';
-                        }
-                    }
+    daysRemainingText.textContent = daysRemaining > 0 ? daysRemaining : 0;
+    
+    let barColor = 'bg-gray-200';
+    let barWidth = '0%';
+    let messageText = '';
 
-                    if (progressBar) {
-                        progressBar.className = `h-2.5 rounded-full ${barColor}`;
-                        progressBar.style.width = barWidth;
-                    }
-                    if (renewalMessage) {
-                        renewalMessage.textContent = messageText;
-                        renewalMessage.classList.toggle('hidden', messageText === '');
-                    }
-                }
+    if (daysRemaining > 5) {
+        barColor = 'bg-green-500';
+        barWidth = '100%';
+    } else if (daysRemaining > 0 && daysRemaining <= 5) {
+        barColor = 'bg-yellow-500';
+        barWidth = `${(daysRemaining / 5) * 100}%`;
+    } else {
+        barColor = 'bg-red-500';
+        barWidth = '0%';
+        if (expirationDate) {
+            messageText = 'Renueva tu membresía';
+        }
+    }
+
+    if (progressBar) {
+        progressBar.className = `h-2.5 rounded-full ${barColor}`;
+        progressBar.style.width = barWidth;
+    }
+    if (renewalMessage) {
+        renewalMessage.textContent = messageText;
+        renewalMessage.classList.toggle('hidden', messageText === '');
+    }
+}
             } else {
                 document.getElementById('admin-navbar').style.display = 'none';
                 document.getElementById('client-navbar').style.display = 'none';
@@ -1323,7 +1351,7 @@ function filterUsers(searchTerm) {
                 document.getElementById('modal-user-birthdate').textContent = userData.birthdate || 'N/A';
                 document.getElementById('modal-user-address').textContent = userData.address || 'N/A';
                 document.getElementById('modal-user-membership').textContent = userData.membership;
-                document.getElementById('modal-user-expiration').textContent = expirationDate ? expirationDate.toLocaleDateString('es-ES') : 'N/A';
+                document.getElementById('modal-user-expiration').textContent = formatDateToLongString(expirationDate);
                 
                 const statusSpan = document.getElementById('modal-user-status').querySelector('span');
                 statusSpan.textContent = status;
@@ -1562,8 +1590,7 @@ let currentAccessUserId = null;
               document.getElementById('access-user-id').textContent = userData.userId.toString().padStart(3, '0') || 'N/A';
                 document.getElementById('access-user-name').textContent = userData.name || 'N/A';
                 document.getElementById('access-user-membership').textContent = userData.membership || 'N/A';
-                document.getElementById('access-user-expiration').textContent = expirationDate ? 
-                    expirationDate.toLocaleDateString('es-ES') : 'N/A';
+                document.getElementById('access-user-expiration').textContent = formatDateToLongString(expirationDate);
                 
                 // Mostrar resultado según estado de membresía
                 const daysRemaining = expirationDate ? Math.ceil((expirationDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
