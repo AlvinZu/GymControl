@@ -1140,31 +1140,89 @@ function filterUsers(searchTerm) {
         async function editUser(userId) {
             showScreen('create-user-screen');
             document.getElementById('create-user-title').textContent = 'Editar Usuario';
+            document.getElementById('create-user-form').reset();
             document.getElementById('user-doc-id').value = userId;
+            
             const userRef = doc(db, "users", userId);
             const userSnap = await getDoc(userRef);
+
             if (userSnap.exists()) {
                 const userData = userSnap.data();
                 document.getElementById('user-name').value = userData.name;
                 document.getElementById('user-email').value = userData.email;
-                document.getElementById('user-membership').value = userData.membership;
-                document.getElementById('user-start-date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('user-id-input').value = userData.userId;
                 document.getElementById('user-id-container').style.display = 'block';
+
+                // --- INICIA LA NUEVA LÓGICA PARA LA FECHA DE INICIO ---
+
+                const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Normalizamos la fecha de hoy para una comparación precisa
+
+                let startDateForField = new Date(); // Por defecto, la fecha de inicio es hoy
+
+                // Si existe una fecha de vencimiento y es futura...
+                if (expirationDate && expirationDate > today) {
+                    // ...la nueva membresía debe iniciar el día SIGUIENTE al vencimiento.
+                    startDateForField = new Date(expirationDate);
+                    startDateForField.setDate(startDateForField.getDate() + 1);
+                }
+                
+                // Formateamos la fecha a YYYY-MM-DD y la asignamos al campo
+                document.getElementById('user-start-date').value = startDateForField.toISOString().split('T')[0];
+                
+                // --- TERMINA LA NUEVA LÓGICA ---
+
             } else {
                 alert("No se encontró el usuario.");
+                showScreen('admin-dashboard'); // Regresar si el usuario no existe
+                return;
             }
-          // NUEVA LÍNEA: Llenar el select de membresías
+            
+            // Llenamos las opciones de membresías al final
             await populateMembershipOptions('user-membership');
         }
-        
-        async function deleteUser(userId) {
-            if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
-                await deleteDoc(doc(db, "users", userId));
-                alert('Usuario eliminado');
-                fetchUsers();
+      
+      async function updateUserExpiration(userDocId) {
+            try {
+                // Paso 1: Buscar todas las transacciones restantes del usuario
+                const transactionsCollection = collection(db, "transactions");
+                const q = query(transactionsCollection, where("userId", "==", userDocId));
+                const querySnapshot = await getDocs(q);
+
+                const userRef = doc(db, "users", userDocId);
+
+                if (querySnapshot.empty) {
+                    // Caso A: No quedan transacciones. Reseteamos la membresía del usuario.
+                    await updateDoc(userRef, {
+                        membership: 'Ninguna',
+                        expiration: null
+                    });
+                    console.log(`Usuario ${userDocId} actualizado: Sin membresía.`);
+                } else {
+                    // Caso B: Quedan una o más transacciones. Encontramos la más reciente.
+                    let latestTransaction = null;
+                    querySnapshot.forEach(doc => {
+                        const transaction = doc.data();
+                        // Comparamos para encontrar la fecha de vencimiento más lejana en el futuro
+                        if (!latestTransaction || transaction.expirationDate.seconds > latestTransaction.expirationDate.seconds) {
+                            latestTransaction = transaction;
+                        }
+                    });
+
+                    // Actualizamos el documento del usuario con los datos de la membresía más reciente
+                    await updateDoc(userRef, {
+                        membership: latestTransaction.membershipName,
+                        expiration: latestTransaction.expirationDate
+                    });
+                    console.log(`Usuario ${userDocId} actualizado con la nueva fecha de vencimiento correcta.`);
+                }
+            } catch (error) {
+                console.error("Error al actualizar la fecha de vencimiento del usuario:", error);
+                alert("Hubo un error al recalcular la membresía del usuario.");
             }
         }
+      
 
         // =================================================================
         // GESTIÓN DE MEMBRESÍAS
@@ -1291,24 +1349,24 @@ function filterUsers(searchTerm) {
                         const paymentDate = transactionData.paymentDate ? new Date(transactionData.paymentDate.seconds * 1000).toLocaleDateString('es-ES') : 'N/A';
                         
                         const listItem = document.createElement('li');
-                        listItem.className = 'border-b last:border-b-0 py-2 group';
-                        listItem.innerHTML = `
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="font-semibold">${transactionData.membershipName}</p>
-                                    <p class="text-xs text-gray-500">Pagado: ${paymentDate}</p>
-                                </div>
-                                <div class="opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button class="edit-transaction-btn text-indigo-600 hover:text-indigo-900 mr-2" data-id="${transactionDoc.id}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="delete-transaction-btn text-red-600 hover:text-red-900" data-id="${transactionDoc.id}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        transactionsList.appendChild(listItem);
+listItem.className = 'border-b last:border-b-0 py-2'; // <--- Se eliminó la clase "group"
+listItem.innerHTML = `
+    <div class="flex justify-between items-center">
+        <div>
+            <p class="font-semibold">${transactionData.membershipName}</p>
+            <p class="text-xs text-gray-500">Pagado: ${paymentDate}</p>
+        </div>
+        <div> 
+            <button class="edit-transaction-btn text-indigo-600 hover:text-indigo-900 mr-2 text-lg" data-id="${transactionDoc.id}">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="delete-transaction-btn text-red-600 hover:text-red-900 text-lg" data-id="${transactionDoc.id}">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+`;
+transactionsList.appendChild(listItem);
                         
                         // Agregar event listeners a los nuevos botones
                         listItem.querySelector('.edit-transaction-btn').addEventListener('click', (e) => {
@@ -1339,50 +1397,91 @@ function filterUsers(searchTerm) {
         }
 
         async function deleteTransaction(transactionId) {
-            if (confirm('¿Estás seguro de eliminar este registro de pago?')) {
+            if (confirm('¿Estás seguro de que quieres eliminar este registro de pago? Esta acción es irreversible.')) {
                 try {
-                    await deleteDoc(doc(db, "transactions", transactionId));
-                    alert('Registro de pago eliminado');
-                    // Recargar los detalles del usuario para actualizar la vista
-                    if (currentAccessUserId) {
-                        showUserDetails(currentAccessUserId);
+                    // Paso 1: Obtener el documento de la transacción para saber a qué usuario pertenece (userDocId)
+                    const transactionRef = doc(db, "transactions", transactionId);
+                    const transactionSnap = await getDoc(transactionRef);
+
+                    if (!transactionSnap.exists()) {
+                        alert("Error: No se pudo encontrar el registro de pago.");
+                        return;
                     }
+
+                    const deletedTransactionData = transactionSnap.data();
+                    const userDocId = deletedTransactionData.userId; // ID del documento del usuario afectado
+
+                    // Paso 2: Eliminar el documento de la transacción
+                    await deleteDoc(transactionRef);
+                    alert('Registro de pago eliminado exitosamente.');
+
+                    // Paso 3: Llamar a la nueva función para recalcular y actualizar el perfil del usuario
+                    await updateUserExpiration(userDocId);
+
+                    // Paso 4: Refrescar la vista del modal si está abierta
+                    const modal = document.getElementById('user-details-modal');
+                    if (!modal.classList.contains('hidden')) {
+                        await showUserDetails(userDocId); // Recargamos el modal con la info actualizada
+                    }
+                    
+                    // Actualizar también la tabla de usuarios en segundo plano por si el estado cambió
+                    await fetchUsers();
+
                 } catch (error) {
-                    alert('Error al eliminar el registro: ' + error.message);
+                    console.error("Error detallado al eliminar la transacción:", error);
+                    alert('Ocurrió un error al eliminar el registro: ' + error.message);
                 }
             }
         }
 
         async function editTransaction(transactionId) {
-            const transactionRef = doc(db, "transactions", transactionId);
-            const transactionSnap = await getDoc(transactionRef);
-            
-            if (transactionSnap.exists()) {
-                const transactionData = transactionSnap.data();
-                
-                // Aquí puedes implementar un modal de edición similar al de usuarios/membresías
-                // Por ahora mostraremos un prompt simple para editar la fecha de pago
-                const newPaymentDate = prompt('Nueva fecha de pago (YYYY-MM-DD):', 
-                    transactionData.paymentDate ? 
-                    new Date(transactionData.paymentDate.seconds * 1000).toISOString().split('T')[0] : 
-                    new Date().toISOString().split('T')[0]);
-                
-                if (newPaymentDate) {
-                    try {
-                        await updateDoc(transactionRef, {
-                            paymentDate: new Date(newPaymentDate)
-                        });
-                        alert('Registro de pago actualizado');
-                        // Recargar los detalles del usuario
-                        if (currentAccessUserId) {
-                            showUserDetails(currentAccessUserId);
-                        }
-                    } catch (error) {
-                        alert('Error al actualizar el registro: ' + error.message);
-                    }
-                }
-            }
+    const modal = document.getElementById('edit-transaction-modal');
+    const form = document.getElementById('edit-transaction-form');
+    const transactionRef = doc(db, "transactions", transactionId);
+    const transactionSnap = await getDoc(transactionRef);
+
+    if (!transactionSnap.exists()) {
+        alert("Error: No se encontró la transacción.");
+        return;
+    }
+
+    const transactionData = transactionSnap.data();
+
+    // Guardar IDs en el formulario para usarlos después
+    form.querySelector('#transaction-doc-id').value = transactionId;
+    form.querySelector('#transaction-user-id').value = transactionData.userId;
+
+    // Rellenar la fecha de pago actual
+    const paymentDate = new Date(transactionData.paymentDate.seconds * 1000);
+    form.querySelector('#transaction-payment-date').value = paymentDate.toISOString().split('T')[0];
+
+    // Cargar todas las membresías en el menú desplegable
+    const selectElement = form.querySelector('#transaction-membership-select');
+    selectElement.innerHTML = ''; // Limpiar opciones anteriores
+    const membershipsCollection = collection(db, "memberships");
+    const membershipSnapshot = await getDocs(membershipsCollection);
+    
+    let selectedMembershipId = '';
+    membershipSnapshot.forEach(doc => {
+        const membership = doc.data();
+        const option = document.createElement('option');
+        option.value = doc.id;
+        option.textContent = `${membership.name} (${membership.duration} días)`;
+        selectElement.appendChild(option);
+        // Si encontramos la membresía actual de la transacción, guardamos su ID para seleccionarla
+        if (membership.name === transactionData.membershipName) {
+            selectedMembershipId = doc.id;
         }
+    });
+
+    // Seleccionar la membresía correcta en el menú
+    if (selectedMembershipId) {
+        selectElement.value = selectedMembershipId;
+    }
+    
+    // Finalmente, mostrar el modal
+    modal.classList.remove('hidden');
+}
         
         async function populateMembershipOptions(selectId) {
             const selectElement = document.getElementById(selectId);
@@ -1629,6 +1728,69 @@ document.addEventListener('DOMContentLoaded', () => {
             editUser(currentAccessUserId);
         }
     });
+  
+    // Lógica para el nuevo modal de edición de transacciones
+const editTransactionModal = document.getElementById('edit-transaction-modal');
+
+document.getElementById('edit-transaction-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const transactionId = document.getElementById('transaction-doc-id').value;
+    const userId = document.getElementById('transaction-user-id').value;
+    const newMembershipId = document.getElementById('transaction-membership-select').value;
+    const newPaymentDateStr = document.getElementById('transaction-payment-date').value;
+
+    if (!transactionId || !userId || !newMembershipId || !newPaymentDateStr) {
+        alert('Por favor completa todos los campos.');
+        return;
+    }
+
+    try {
+        // Obtener los datos de la nueva membresía seleccionada
+        const membershipRef = doc(db, "memberships", newMembershipId);
+        const membershipSnap = await getDoc(membershipRef);
+        const membershipData = membershipSnap.data();
+
+        // Calcular la nueva fecha de vencimiento
+        const paymentDate = new Date(newPaymentDateStr);
+        // Ajustamos la fecha para evitar problemas de zona horaria, tomando el inicio del día
+        const newExpirationDate = new Date(new Date(paymentDate).setUTCHours(0, 0, 0, 0));
+        newExpirationDate.setDate(newExpirationDate.getDate() + parseInt(membershipData.duration));
+
+        // Actualizar el documento de la transacción
+        const transactionRef = doc(db, "transactions", transactionId);
+        await updateDoc(transactionRef, {
+            membershipName: membershipData.name,
+            duration: membershipData.duration,
+            price: membershipData.price,
+            paymentDate: new Date(newPaymentDateStr), // Guardar la fecha de inicio seleccionada
+            expirationDate: newExpirationDate
+        });
+        
+        editTransactionModal.classList.add('hidden'); // Ocultar el modal
+        alert("Transacción actualizada exitosamente");
+
+        // ¡Muy importante! Recalcular el estado del usuario y refrescar la vista
+        await updateUserExpiration(userId);
+
+        // También recargar la vista del modal de detalles si sigue abierto
+        const userDetailsModal = document.getElementById('user-details-modal');
+        if (!userDetailsModal.classList.contains('hidden')) {
+            await showUserDetails(userId);
+        }
+
+    } catch (error) {
+        console.error("Error al actualizar la transacción: ", error);
+        alert("Ocurrió un error al guardar los cambios.");
+    }
+});
+
+// Lógica para los botones de cancelar/cerrar del modal
+document.getElementById('close-edit-transaction-modal').addEventListener('click', () => {
+    editTransactionModal.classList.add('hidden');
+});
+document.getElementById('cancel-edit-transaction-btn').addEventListener('click', () => {
+    editTransactionModal.classList.add('hidden');
+});
 
     // Register service worker for PWA
     if ('serviceWorker' in navigator) {
@@ -1653,5 +1815,42 @@ document.addEventListener('DOMContentLoaded', () => {
 });
       
     </script>
+      
+      <div id="edit-transaction-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-sm animate-fadeIn">
+        <div class="flex justify-between items-center border-b px-6 py-4">
+            <h3 class="text-lg font-semibold">Editar Transacción</h3>
+            <button id="close-edit-transaction-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="edit-transaction-form" class="p-6 space-y-4">
+            <input type="hidden" id="transaction-doc-id">
+            <input type="hidden" id="transaction-user-id">
+
+            <div>
+                <label for="transaction-membership-select" class="block text-sm font-medium text-gray-700">Tipo de Membresía</label>
+                <select id="transaction-membership-select" required class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </select>
+            </div>
+
+            <div>
+                <label for="transaction-payment-date" class="block text-sm font-medium text-gray-700">Fecha de Pago</label>
+                <input type="date" id="transaction-payment-date" required class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button type="button" id="cancel-edit-transaction-btn" class="btn-primary bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 mr-3">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700">
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+      
+      
 </body>
 </html>
