@@ -861,6 +861,10 @@ function formatDateToLongString(date) {
       
       let todaysAccessLogs = [];
       
+// Definición de los sonidos de acceso
+const successSound = new Audio('Acceso_Concedido.mp3');
+const failureSound = new Audio('Acceso_Denegado.mp3');
+      
 
         // =================================================================
         // FUNCIONES DE NAVEGACIÓN Y LÓGICA GENERAL
@@ -949,7 +953,7 @@ function formatDateToLongString(date) {
     
     document.getElementById('user-profile-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
                   
-                  // ==========================================================
+    // ==========================================================
     //  NUEVO: GENERAR Y MOSTRAR EL CÓDIGO QR
     // ==========================================================
     const qrContainer = document.getElementById('user-qrcode-container');
@@ -1803,12 +1807,18 @@ let currentAccessUserId = null;
     if (type === 'success') {
         accessResultIcon.innerHTML = `<i class="fas fa-circle-check text-green-600"></i>`;
         accessMainContainer.classList.add('bg-green-100', 'border-green-400');
+        // Reproduce sonido de éxito con manejo de errores
+        successSound.play().catch(error => console.error("Error al reproducir sonido de éxito:", error));
     } else if (type === 'warning') {
         accessResultIcon.innerHTML = `<i class="fas fa-exclamation-triangle text-yellow-600"></i>`;
         accessMainContainer.classList.add('bg-yellow-100', 'border-yellow-400');
+        // Reproduce sonido de éxito con manejo de errores
+        successSound.play().catch(error => console.error("Error al reproducir sonido de éxito:", error));
     } else {
         accessResultIcon.innerHTML = `<i class="fas fa-exclamation-circle text-red-600"></i>`;
         accessMainContainer.classList.add('bg-red-100', 'border-red-400');
+        // Reproduce sonido de error con manejo de errores
+        failureSound.play().catch(error => console.error("Error al reproducir sonido de error:", error));
     }
     
     accessMainContainer.classList.add('border-2', 'transition-colors', 'duration-500');
@@ -2117,6 +2127,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Evento para el nuevo botón de escanear QR
 document.getElementById('scan-qr-btn').addEventListener('click', () => {
+    // --- LÍNEAS AÑADIDAS PARA "DESBLOQUEAR" EL AUDIO ---
+    // Esto reproduce y pausa los sonidos muy rápido, el usuario no lo oye,
+    // pero le dice al navegador que esta página tiene permiso para emitir sonidos.
+    successSound.play().catch(() => {});
+    successSound.pause();
+    successSound.currentTime = 0;
+    failureSound.play().catch(() => {});
+    failureSound.pause();
+    failureSound.currentTime = 0;
+    // --- FIN DE LAS LÍNEAS AÑADIDAS ---
+  
     const qrReaderEl = document.getElementById('qr-reader');
     
     if (qrReaderEl.style.display === 'none') {
