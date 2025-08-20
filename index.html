@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GymPro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Icono App -->
@@ -526,6 +528,32 @@ body.with-admin-navbar {
             <p id="no-expiring-message" class="text-center text-gray-500 py-4 hidden">Ninguna membresía vence en los próximos 7 días.</p>
         </div>
     </div>
+          <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white ...">
+    </div>
+
+<div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white shadow rounded-lg p-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4"><i class="fas fa-clock mr-2 text-blue-500"></i>Asistencia por Hora (Últimos 30 días)</h3>
+    <div>
+        <canvas id="peak-hours-chart"></canvas>
+    </div>
+</div>
+
+<div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white shadow rounded-lg p-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4"><i class="fas fa-history mr-2 text-gray-500"></i>Historial de Accesos Recientes</h3>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha y Hora</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resultado</th>
+                </tr>
+            </thead>
+            <tbody id="access-history-list" class="bg-white divide-y divide-gray-200">
+                </tbody>
+        </table>
+    </div>
+</div>
 
 </div>
       
@@ -791,6 +819,8 @@ function formatDateToLongString(date) {
     // Reemplaza "de" por diagonales para coincidir con tu ejemplo
     return formattedDate.replace(/ de /g, '/');
 }
+      
+      Chart.register(ChartDataLabels);
       
 
         // =================================================================
@@ -1674,6 +1704,19 @@ let currentAccessUserId = null;
                     showAccessResult('error', 'Acceso Denegado', 'Membresía Vencida. Por favor, renueva tu plan.');
                     accessUserInfo.classList.remove('hidden');
                 }
+              
+               // ==========================================================
+                //  NUEVO: Guardar el registro del intento de acceso
+                // ==========================================================
+                const logData = {
+                    userId: userDoc.id,
+                    userName: userData.name,
+                    timestamp: new Date(),
+                    status: isMembershipActive ? 'concedido' : 'denegado',
+                    membershipStatus: isMembershipActive ? 'Activa' : 'Vencida'
+                };
+                await addDoc(collection(db, "access_logs"), logData);
+                // ==========================================================
                 
             } catch (error) {
                 console.error("Error al verificar acceso:", error);
@@ -1723,7 +1766,7 @@ let currentAccessUserId = null;
 // REPORTES
 // =================================================================
 async function generateReports() {
-    // Referencias a los elementos del DOM
+    // --- (SECCIÓN 1 y 2: Ingresos y Membresías - SIN CAMBIOS) ---
     const monthlyIncomeEl = document.getElementById('monthly-income');
     const weeklyIncomeEl = document.getElementById('weekly-income');
     const activeMembershipsEl = document.getElementById('active-memberships-count');
@@ -1733,107 +1776,163 @@ async function generateReports() {
     const comparisonBadgeEl = document.getElementById('income-comparison-badge');
     const comparisonDetailsEl = document.getElementById('income-comparison-details');
 
-    // --- 1. Calcular Ingresos ---
     const transactionsCollection = collection(db, "transactions");
     const transactionsSnap = await getDocs(transactionsCollection);
-    
-    let monthlyIncome = 0;
-    let weeklyIncome = 0;
-    let previousMonthComparableIncome = 0; // <-- Nuevo: para la comparativa
-
+    let monthlyIncome = 0, weeklyIncome = 0, previousMonthComparableIncome = 0;
     const now = new Date();
     const todayDayOfMonth = now.getDate();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
     startOfWeek.setHours(0, 0, 0, 0);
-
-    // Definimos el periodo comparable del mes anterior
     const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfPreviousMonthComparablePeriod = new Date(now.getFullYear(), now.getMonth() - 1, todayDayOfMonth, 23, 59, 59);
 
     transactionsSnap.forEach(doc => {
-        const transaction = doc.data();
-        const paymentDate = new Date(transaction.paymentDate.seconds * 1000);
-        const price = parseFloat(transaction.price || 0);
-
-        if (paymentDate >= startOfMonth) { monthlyIncome += price; }
-        if (paymentDate >= startOfWeek) { weeklyIncome += price; }
-        if (paymentDate >= startOfPreviousMonth && paymentDate <= endOfPreviousMonthComparablePeriod) {
-            previousMonthComparableIncome += price;
-        }
+        const t = doc.data();
+        const pDate = new Date(t.paymentDate.seconds * 1000);
+        const price = parseFloat(t.price || 0);
+        if (pDate >= startOfMonth) monthlyIncome += price;
+        if (pDate >= startOfWeek) weeklyIncome += price;
+        if (pDate >= startOfPreviousMonth && pDate <= endOfPreviousMonthComparablePeriod) previousMonthComparableIncome += price;
     });
-
     monthlyIncomeEl.textContent = `$${monthlyIncome.toFixed(2)}`;
     weeklyIncomeEl.textContent = `$${weeklyIncome.toFixed(2)}`;
-    
-    // --- NUEVO: Lógica para la Comparativa Mensual ---
-    comparisonBadgeEl.classList.remove('text-green-600', 'text-red-600', 'text-gray-500');
     if (previousMonthComparableIncome > 0) {
-        const percentageChange = ((monthlyIncome - previousMonthComparableIncome) / previousMonthComparableIncome) * 100;
-        if (percentageChange >= 0) {
-            comparisonBadgeEl.textContent = `▲ +${percentageChange.toFixed(1)}%`;
-            comparisonBadgeEl.classList.add('text-green-600');
-        } else {
-            comparisonBadgeEl.textContent = `▼ ${percentageChange.toFixed(1)}%`;
-            comparisonBadgeEl.classList.add('text-red-600');
-        }
+        const pChange = ((monthlyIncome - previousMonthComparableIncome) / previousMonthComparableIncome) * 100;
+        comparisonBadgeEl.textContent = pChange >= 0 ? `▲ +${pChange.toFixed(1)}%` : `▼ ${pChange.toFixed(1)}%`;
+        comparisonBadgeEl.className = `text-5xl font-extrabold mt-2 ${pChange >= 0 ? 'text-green-600' : 'text-red-600'}`;
     } else if (monthlyIncome > 0) {
-        comparisonBadgeEl.textContent = '▲'; // Crecimiento desde cero
-        comparisonBadgeEl.classList.add('text-green-600');
+        comparisonBadgeEl.textContent = '▲';
+        comparisonBadgeEl.className = 'text-5xl font-extrabold mt-2 text-green-600';
     } else {
-        comparisonBadgeEl.textContent = '0%'; // Sin cambios
-        comparisonBadgeEl.classList.add('text-gray-500');
+        comparisonBadgeEl.textContent = '0%';
+        comparisonBadgeEl.className = 'text-5xl font-extrabold mt-2 text-gray-500';
     }
     comparisonDetailsEl.textContent = `Mes anterior: $${previousMonthComparableIncome.toFixed(2)}`;
 
-
-    // --- 2. Contar Membresías Activas y buscar las que vencen ---
     const usersCollection = collection(db, "users");
     const usersSnap = await getDocs(usersCollection);
-
     let activeCount = 0;
     const expiringSoonUsers = [];
     const today = new Date();
     const inAWeek = new Date();
     inAWeek.setDate(today.getDate() + 7);
-
     usersSnap.forEach(doc => {
         const user = doc.data();
         if (user.expiration) {
-            const expirationDate = new Date(user.expiration.seconds * 1000);
-            if (expirationDate > today) { activeCount++; }
-            if (expirationDate > today && expirationDate <= inAWeek) {
-                expiringSoonUsers.push({
-                    name: user.name,
-                    membership: user.membership,
-                    expirationDate: expirationDate
-                });
-            }
+            const expDate = new Date(user.expiration.seconds * 1000);
+            if (expDate > today) activeCount++;
+            if (expDate > today && expDate <= inAWeek) expiringSoonUsers.push({ name: user.name, membership: user.membership, expirationDate: expDate });
         }
     });
-
     activeMembershipsEl.textContent = activeCount;
     expiringCountBadge.textContent = expiringSoonUsers.length;
-
-    // --- 3. Mostrar lista de membresías que vencen ---
     expiringListEl.innerHTML = '';
     if (expiringSoonUsers.length > 0) {
         noExpiringMessageEl.classList.add('hidden');
         expiringSoonUsers.sort((a, b) => a.expirationDate - b.expirationDate);
-        
         expiringSoonUsers.forEach(user => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.name}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.membership}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDateToLongString(user.expirationDate)}</td>
-            `;
+            row.innerHTML = `<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.name}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.membership}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDateToLongString(user.expirationDate)}</td>`;
             expiringListEl.appendChild(row);
         });
     } else {
         noExpiringMessageEl.classList.remove('hidden');
     }
+
+    // --- SECCIÓN 3: Reportes de Actividad ---
+    const accessLogsCollection = collection(db, "access_logs");
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+    
+    const qLogs = query(accessLogsCollection, where("timestamp", ">=", thirtyDaysAgo));
+    const logsSnap = await getDocs(qLogs);
+    
+    const hourCounts = Array(24).fill(0);
+    logsSnap.forEach(doc => {
+        const log = doc.data();
+        if (log.status === 'concedido') {
+            const accessHour = new Date(log.timestamp.seconds * 1000).getHours();
+            hourCounts[accessHour]++;
+        }
+    });
+
+    const ctx = document.getElementById('peak-hours-chart').getContext('2d');
+    if (window.myPeakHoursChart) {
+        window.myPeakHoursChart.destroy();
+    }
+    
+    const chartLabels = [];
+    for (let i = 5; i <= 23; i++) { 
+        chartLabels.push(`${i}:00`);
+    }
+    const chartData = hourCounts.slice(5, 23);
+
+    window.myPeakHoursChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: 'Nº de Accesos',
+                data: chartData,
+                backgroundColor: 'rgba(79, 70, 229, 0.5)',
+                borderColor: 'rgba(79, 70, 229, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: { 
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { stepSize: 1 } 
+                } 
+            },
+            // ==========================================================
+            //  NUEVO: Configuración para mostrar los números en las barras
+            // ==========================================================
+            plugins: {
+                legend: {
+                    display: false // Ocultamos la leyenda "Nº de Accesos" para un look más limpio
+                },
+                datalabels: {
+                    anchor: 'end', // Posición de la etiqueta (al final de la barra)
+                    align: 'end',  // Alineación de la etiqueta
+                    color: '#555', // Color del texto
+                    font: {
+                        weight: 'bold'
+                    },
+                    formatter: (value, context) => {
+                        return value > 0 ? value : ''; // Muestra el número solo si es mayor que 0
+                    }
+                }
+            }
+            // ==========================================================
+        }
+    });
+
+    // Lógica para el Historial de Accesos Recientes
+    const accessHistoryListEl = document.getElementById('access-history-list');
+    accessHistoryListEl.innerHTML = '';
+    const qHistory = query(accessLogsCollection, orderBy("timestamp", "desc"), limit(10));
+    const historySnap = await getDocs(qHistory);
+
+    historySnap.forEach(doc => {
+        const log = doc.data();
+        const accessTime = new Date(log.timestamp.seconds * 1000);
+        const statusClass = log.status === 'concedido' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${log.userName}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${accessTime.toLocaleString('es-MX')}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                    ${log.status}
+                </span>
+            </td>
+        `;
+        accessHistoryListEl.appendChild(row);
+    });
 }
       
         
