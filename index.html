@@ -1266,136 +1266,119 @@ function filterUsers(searchTerm) {
 }
         
     async function saveUser(userId = null) {
-            const name = document.getElementById('user-name').value;
-            const email = document.getElementById('user-email').value;
-            const password = document.getElementById('user-password').value;
-            const membershipId = document.getElementById('user-membership').value;
-            const startDateInput = document.getElementById('user-start-date').value;
-            const manualUserId = document.getElementById('user-id-input').value;
+    const name = document.getElementById('user-name').value;
+    const email = document.getElementById('user-email').value;
+    const password = document.getElementById('user-password').value;
+    const membershipId = document.getElementById('user-membership').value;
+    const startDateInput = document.getElementById('user-start-date').value;
+    const manualUserId = document.getElementById('user-id-input').value;
 
-            if (!name || !email || !membershipId || !startDateInput) {
-                alert('Por favor, completa todos los campos obligatorios.');
-                return;
-            }
+    if (!name || !email || !membershipId || !startDateInput) {
+        alert('Por favor, completa todos los campos obligatorios.');
+        return;
+    }
 
-            const membershipRef = doc(db, "memberships", membershipId);
-            const membershipSnap = await getDoc(membershipRef);
-            const membershipData = membershipSnap.data();
+    try {
+        const membershipRef = doc(db, "memberships", membershipId);
+        const membershipSnap = await getDoc(membershipRef);
+        const membershipData = membershipSnap.data();
 
-            let newExpirationDate = null;
-            let effectiveStartDate;
-            let userDocId;
+        let userDocId = userId;
 
-            if (userId) {
-                // Modo Edición: Obtener el usuario actual
-                const userRef = doc(db, "users", userId);
-                const userSnap = await getDoc(userRef);
-                const userData = userSnap.data();
-                userDocId = userId;
-                
-                // Determinar la fecha de inicio de la nueva membresía
-                const oldExpirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+        // --- INICIA CÁLCULO DE FECHA CORREGIDO ---
+        // Se añade 'T00:00:00' para que los navegadores interpreten la fecha consistentemente en la zona horaria local.
+        const startDate = new Date(startDateInput + 'T00:00:00');
+        
+        // Calculamos la fecha de vencimiento para la nueva transacción
+        const newExpirationDate = new Date(startDate);
+        newExpirationDate.setDate(startDate.getDate() + parseInt(membershipData.duration));
+        // --- FIN CÁLCULO DE FECHA CORREGIDO ---
 
-                if (oldExpirationDate && oldExpirationDate > today) {
-                    // Si la membresía actual está activa, la nueva empieza cuando la vieja vence.
-                    effectiveStartDate = new Date(oldExpirationDate.getTime());
-                    effectiveStartDate.setHours(0, 0, 0, 0); 
-                } else {
-                    // Si la membresía ya venció o no existe, la nueva empieza hoy.
-                    effectiveStartDate = new Date(startDateInput);
-                }
-
-                // Calcular la nueva fecha de expiración
-                newExpirationDate = new Date(effectiveStartDate.getTime() + membershipData.duration * 24 * 60 * 60 * 1000);
-
-                // Actualizar el documento de Firestore
-                await updateDoc(userRef, {
-                    name: name,
-                    email: email,
-                    membership: membershipData.name,
-                    expiration: newExpirationDate,
-                    userId: parseInt(manualUserId)
-                });
-                alert('Usuario actualizado exitosamente');
-            } else {
-                // Modo Creación: Usar la fecha de inicio proporcionada
-                const start = new Date(startDateInput);
-                newExpirationDate = new Date(start.getTime() + membershipData.duration * 24 * 60 * 60 * 1000);
-                
-                const newDocRef = await addDoc(collection(db, "users"), {
-                    name: name,
-                    email: email,
-                    membership: membershipData.name,
-                    expiration: newExpirationDate,
-                    role: 'user',
-                    userId: await getNextUserId()
-                });
-                userDocId = newDocRef.id;
-                alert('Usuario creado exitosamente');
-            }
-            
-            // ===============================================
-            // NUEVO: Guardar la transacción
-            // ===============================================
-            const transactionsCollection = collection(db, "transactions");
-            await addDoc(transactionsCollection, {
-                userId: userDocId, // Usar el ID del documento de usuario
+        if (userId) { // --- MODO EDICIÓN ---
+            const userRef = doc(db, "users", userId);
+            await updateDoc(userRef, {
                 name: name,
-                membershipName: membershipData.name,
-                duration: membershipData.duration,
-                price: membershipData.price,
-                paymentDate: new Date(),
-                expirationDate: newExpirationDate
+                email: email,
+                userId: parseInt(manualUserId)
             });
-
-            showScreen('admin-dashboard');
-            fetchUsers();
+        } else { // --- MODO CREACIÓN ---
+            const newDocRef = await addDoc(collection(db, "users"), {
+                name: name,
+                email: email,
+                membership: 'Ninguna',
+                expiration: null,
+                role: 'user',
+                userId: await getNextUserId()
+            });
+            userDocId = newDocRef.id;
         }
+
+        // Se crea el registro de la transacción
+        await addDoc(collection(db, "transactions"), {
+            userId: userDocId,
+            name: name,
+            membershipName: membershipData.name,
+            duration: membershipData.duration,
+            price: membershipData.price,
+            paymentDate: startDate, // Usamos la fecha de inicio corregida
+            expirationDate: newExpirationDate
+        });
+
+        // Paso Clave: Se recalcula la fecha de vencimiento final del usuario
+        await updateUserExpiration(userDocId);
+        
+        alert(userId ? 'Usuario actualizado y membresía añadida.' : 'Usuario creado exitosamente.');
+        showScreen('admin-dashboard');
+        
+    } catch (error) {
+        console.error("Error al guardar el usuario:", error);
+        alert("Ocurrió un error al guardar los cambios.");
+    }
+}
 
 
         async function editUser(userId) {
-            showScreen('create-user-screen');
-            document.getElementById('create-user-title').textContent = 'Editar Usuario';
-            document.getElementById('create-user-form').reset();
-            document.getElementById('user-doc-id').value = userId;
-            
-            const userRef = doc(db, "users", userId);
-            const userSnap = await getDoc(userRef);
+    showScreen('create-user-screen');
+    document.getElementById('create-user-title').textContent = 'Editar Usuario';
+    document.getElementById('create-user-form').reset();
+    document.getElementById('user-doc-id').value = userId;
+    
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
 
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                document.getElementById('user-name').value = userData.name;
-                document.getElementById('user-email').value = userData.email;
-                document.getElementById('user-id-input').value = userData.userId;
-                document.getElementById('user-id-container').style.display = 'block';
+    if (userSnap.exists()) {
+        const userData = userSnap.data();
+        document.getElementById('user-name').value = userData.name;
+        document.getElementById('user-email').value = userData.email;
+        document.getElementById('user-id-input').value = userData.userId;
+        document.getElementById('user-id-container').style.display = 'block';
 
-                // --- INICIA LA NUEVA LÓGICA PARA LA FECHA DE INICIO ---
+        // --- INICIA LA LÓGICA DE FECHA CORREGIDA ---
+        const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-                const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); // Normalizamos la fecha de hoy para una comparación precisa
+        let startDateForField = new Date(); // Por defecto, hoy
 
-                let startDateForField = new Date(); // Por defecto, la fecha de inicio es hoy
+        if (expirationDate && expirationDate > today) {
+            // La nueva membresía debe iniciar el día SIGUIENTE al vencimiento.
+            startDateForField = new Date(expirationDate);
+            startDateForField.setDate(startDateForField.getDate() + 1);
+        }
+        
+        // Formateamos la fecha a YYYY-MM-DD manualmente para evitar errores de zona horaria
+        const year = startDateForField.getFullYear();
+        const month = (startDateForField.getMonth() + 1).toString().padStart(2, '0');
+        const day = startDateForField.getDate().toString().padStart(2, '0');
+        
+        document.getElementById('user-start-date').value = `${year}-${month}-${day}`;
+        // --- FIN DE LA LÓGICA DE FECHA CORREGIDA ---
 
-                // Si existe una fecha de vencimiento y es futura...
-                if (expirationDate && expirationDate > today) {
-                    // ...la nueva membresía debe iniciar el día SIGUIENTE al vencimiento.
-                    startDateForField = new Date(expirationDate);
-                    startDateForField.setDate(startDateForField.getDate() + 1);
-                }
-                
-                // Formateamos la fecha a YYYY-MM-DD y la asignamos al campo
-                document.getElementById('user-start-date').value = startDateForField.toISOString().split('T')[0];
-                
-                // --- TERMINA LA NUEVA LÓGICA ---
-
-            } else {
-                alert("No se encontró el usuario.");
-                showScreen('admin-dashboard'); // Regresar si el usuario no existe
-                return;
-            }
+    } else {
+        alert("No se encontró el usuario.");
+        showScreen('admin-dashboard');
+        return;
+    }
             
             // Llenamos las opciones de membresías al final
             await populateMembershipOptions('user-membership');
@@ -1523,25 +1506,43 @@ function filterUsers(searchTerm) {
         // DETALLES DEL USUARIO (MODAL)
         // =================================================================
         async function showUserDetails(userId) {
-            const modal = document.getElementById('user-details-modal');
-            const userRef = doc(db, "users", userId);
-            const userSnap = await getDoc(userRef);
-            
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
-                const status = expirationDate && expirationDate > new Date() ? 'Activa' : 'Vencida';
-                const statusColor = status === 'Activa' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+    const modal = document.getElementById('user-details-modal');
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (userSnap.exists()) {
+        const userData = userSnap.data();
+        
+        // ==========================================================
+        //  INICIO DE LA CORRECCIÓN (lógica idéntica a las anteriores)
+        // ==========================================================
+        const expirationDateRaw = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
+        
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
 
-                // Poblar la información del usuario
-                document.getElementById('modal-user-name').textContent = userData.name;
-                document.getElementById('modal-user-email').textContent = userData.email;
-                document.getElementById('modal-user-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
-                document.getElementById('modal-user-phone').textContent = userData.phone || 'N/A';
-                document.getElementById('modal-user-birthdate').textContent = userData.birthdate || 'N/A';
-                document.getElementById('modal-user-address').textContent = userData.address || 'N/A';
-                document.getElementById('modal-user-membership').textContent = userData.membership;
-                document.getElementById('modal-user-expiration').textContent = formatDateToLongString(expirationDate);
+        let normalizedExpiration = null;
+        if (expirationDateRaw) {
+            normalizedExpiration = new Date(expirationDateRaw);
+            normalizedExpiration.setHours(0, 0, 0, 0);
+        }
+        
+        // Determinar el estado usando las fechas normalizadas
+        const status = normalizedExpiration && normalizedExpiration > startOfToday ? 'Activa' : 'Vencida';
+        const statusColor = status === 'Activa' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        // ==========================================================
+        //  FIN DE LA CORRECCIÓN
+        // ==========================================================
+
+        // Poblar la información del usuario (no hay cambios aquí)
+        document.getElementById('modal-user-name').textContent = userData.name;
+        document.getElementById('modal-user-email').textContent = userData.email;
+        document.getElementById('modal-user-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
+        document.getElementById('modal-user-phone').textContent = userData.phone || 'N/A';
+        document.getElementById('modal-user-birthdate').textContent = userData.birthdate || 'N/A';
+        document.getElementById('modal-user-address').textContent = userData.address || 'N/A';
+        document.getElementById('modal-user-membership').textContent = userData.membership;
+        document.getElementById('modal-user-expiration').textContent = formatDateToLongString(expirationDateRaw);
                 
                 const statusSpan = document.getElementById('modal-user-status').querySelector('span');
                 statusSpan.textContent = status;
