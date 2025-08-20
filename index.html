@@ -126,6 +126,12 @@ body.with-admin-navbar {
                 content: "";
             }
         }
+      
+      #access-history-container {
+    max-height: 350px; /* Puedes ajustar esta altura a tu gusto */
+    overflow-y: auto;
+}
+      
     </style>
 </head>
 <body class="bg-gray-100 font-sans pb-16">
@@ -539,8 +545,18 @@ body.with-admin-navbar {
 </div>
 
 <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white shadow rounded-lg p-6">
-    <h3 class="text-lg font-medium text-gray-900 mb-4"><i class="fas fa-history mr-2 text-gray-500"></i>Historial de Accesos Recientes</h3>
-    <div class="overflow-x-auto">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">
+            <i class="fas fa-history mr-2 text-gray-500"></i>Historial de Accesos del Día
+        </h3>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input type="text" id="access-history-search" class="input-field block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md sm:text-sm" placeholder="Buscar por nombre...">
+        </div>
+    </div>
+    <div id="access-history-container" class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
@@ -779,7 +795,7 @@ body.with-admin-navbar {
         // =================================================================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // CONFIGURACIÓN DE TU PROYECTO FIREBASE
         const firebaseConfig = {
@@ -821,6 +837,8 @@ function formatDateToLongString(date) {
 }
       
       Chart.register(ChartDataLabels);
+      
+      let todaysAccessLogs = [];
       
 
         // =================================================================
@@ -1760,6 +1778,41 @@ let currentAccessUserId = null;
     accessResultTitle.textContent = title;
     accessResultMessage.textContent = message;
 }
+    
+      // Nueva función para RENDERIZAR la tabla del historial
+function renderAccessHistory(logsToRender) {
+    const accessHistoryListEl = document.getElementById('access-history-list');
+    accessHistoryListEl.innerHTML = ''; // Limpiamos la tabla
+
+    logsToRender.forEach(log => {
+        const accessTime = new Date(log.timestamp.seconds * 1000);
+        const statusClass = log.status === 'concedido' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${log.userName}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${accessTime.toLocaleString('es-MX')}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                    ${log.status}
+                </span>
+            </td>
+        `;
+        accessHistoryListEl.appendChild(row);
+    });
+}
+
+// Nueva función para FILTRAR los registros
+function filterAccessHistory() {
+    const searchTerm = document.getElementById('access-history-search').value.toLowerCase();
+    if (!searchTerm) {
+        renderAccessHistory(todaysAccessLogs); // Si no hay búsqueda, muestra todo
+        return;
+    }
+    const filteredLogs = todaysAccessLogs.filter(log => 
+        log.userName.toLowerCase().includes(searchTerm)
+    );
+    renderAccessHistory(filteredLogs);
+}
       
       
 // =================================================================
@@ -1767,6 +1820,7 @@ let currentAccessUserId = null;
 // =================================================================
 async function generateReports() {
     // --- (SECCIÓN 1 y 2: Ingresos y Membresías - SIN CAMBIOS) ---
+    // (Todo el código de Ingresos, Comparativa, Membresías Activas y que Vencen se mantiene igual)
     const monthlyIncomeEl = document.getElementById('monthly-income');
     const weeklyIncomeEl = document.getElementById('weekly-income');
     const activeMembershipsEl = document.getElementById('active-memberships-count');
@@ -1775,7 +1829,6 @@ async function generateReports() {
     const expiringCountBadge = document.getElementById('expiring-count-badge');
     const comparisonBadgeEl = document.getElementById('income-comparison-badge');
     const comparisonDetailsEl = document.getElementById('income-comparison-details');
-
     const transactionsCollection = collection(db, "transactions");
     const transactionsSnap = await getDocs(transactionsCollection);
     let monthlyIncome = 0, weeklyIncome = 0, previousMonthComparableIncome = 0;
@@ -1787,7 +1840,6 @@ async function generateReports() {
     startOfWeek.setHours(0, 0, 0, 0);
     const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfPreviousMonthComparablePeriod = new Date(now.getFullYear(), now.getMonth() - 1, todayDayOfMonth, 23, 59, 59);
-
     transactionsSnap.forEach(doc => {
         const t = doc.data();
         const pDate = new Date(t.paymentDate.seconds * 1000);
@@ -1810,7 +1862,6 @@ async function generateReports() {
         comparisonBadgeEl.className = 'text-5xl font-extrabold mt-2 text-gray-500';
     }
     comparisonDetailsEl.textContent = `Mes anterior: $${previousMonthComparableIncome.toFixed(2)}`;
-
     const usersCollection = collection(db, "users");
     const usersSnap = await getDocs(usersCollection);
     let activeCount = 0;
@@ -1841,14 +1892,12 @@ async function generateReports() {
         noExpiringMessageEl.classList.remove('hidden');
     }
 
-    // --- SECCIÓN 3: Reportes de Actividad ---
+    // --- SECCIÓN 3: Reportes de Actividad (CON CAMBIOS) ---
     const accessLogsCollection = collection(db, "access_logs");
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(now.getDate() - 30);
-    
     const qLogs = query(accessLogsCollection, where("timestamp", ">=", thirtyDaysAgo));
     const logsSnap = await getDocs(qLogs);
-    
     const hourCounts = Array(24).fill(0);
     logsSnap.forEach(doc => {
         const log = doc.data();
@@ -1857,84 +1906,31 @@ async function generateReports() {
             hourCounts[accessHour]++;
         }
     });
-
     const ctx = document.getElementById('peak-hours-chart').getContext('2d');
-    if (window.myPeakHoursChart) {
-        window.myPeakHoursChart.destroy();
-    }
-    
+    if (window.myPeakHoursChart) { window.myPeakHoursChart.destroy(); }
     const chartLabels = [];
-    for (let i = 5; i <= 23; i++) { 
-        chartLabels.push(`${i}:00`);
-    }
+    for (let i = 5; i <= 23; i++) { chartLabels.push(`${i}:00`); }
     const chartData = hourCounts.slice(5, 23);
-
     window.myPeakHoursChart = new Chart(ctx, {
         type: 'bar',
-        data: {
-            labels: chartLabels,
-            datasets: [{
-                label: 'Nº de Accesos',
-                data: chartData,
-                backgroundColor: 'rgba(79, 70, 229, 0.5)',
-                borderColor: 'rgba(79, 70, 229, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: { 
-                y: { 
-                    beginAtZero: true, 
-                    ticks: { stepSize: 1 } 
-                } 
-            },
-            // ==========================================================
-            //  NUEVO: Configuración para mostrar los números en las barras
-            // ==========================================================
-            plugins: {
-                legend: {
-                    display: false // Ocultamos la leyenda "Nº de Accesos" para un look más limpio
-                },
-                datalabels: {
-                    anchor: 'end', // Posición de la etiqueta (al final de la barra)
-                    align: 'end',  // Alineación de la etiqueta
-                    color: '#555', // Color del texto
-                    font: {
-                        weight: 'bold'
-                    },
-                    formatter: (value, context) => {
-                        return value > 0 ? value : ''; // Muestra el número solo si es mayor que 0
-                    }
-                }
-            }
-            // ==========================================================
-        }
+        data: { labels: chartLabels, datasets: [{ label: 'Nº de Accesos', data: chartData, backgroundColor: 'rgba(79, 70, 229, 0.5)', borderColor: 'rgba(79, 70, 229, 1)', borderWidth: 1 }] },
+        options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#555', font: { weight: 'bold' }, formatter: (value, context) => { return value > 0 ? value : ''; } } } }
     });
 
-    // Lógica para el Historial de Accesos Recientes
-    const accessHistoryListEl = document.getElementById('access-history-list');
-    accessHistoryListEl.innerHTML = '';
-    const qHistory = query(accessLogsCollection, orderBy("timestamp", "desc"), limit(10));
+    // --- Lógica MODIFICADA para el Historial de Accesos del Día ---
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const qHistory = query(accessLogsCollection, where("timestamp", ">=", startOfDay), where("timestamp", "<=", endOfDay), orderBy("timestamp", "desc"));
     const historySnap = await getDocs(qHistory);
-  
-    console.log('Registros de historial encontrados:', historySnap.size);
 
-    historySnap.forEach(doc => {
-        const log = doc.data();
-        const accessTime = new Date(log.timestamp.seconds * 1000);
-        const statusClass = log.status === 'concedido' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${log.userName}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${accessTime.toLocaleString('es-MX')}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                    ${log.status}
-                </span>
-            </td>
-        `;
-        accessHistoryListEl.appendChild(row);
-    });
+    // Guardamos los resultados en nuestra variable global
+    todaysAccessLogs = historySnap.docs.map(doc => doc.data());
+    
+    // Renderizamos la tabla con todos los registros del día
+    renderAccessHistory(todaysAccessLogs);
 }
       
         
@@ -2051,6 +2047,9 @@ document.addEventListener('DOMContentLoaded', () => {
             editUser(currentAccessUserId);
         }
     });
+  
+  // Evento para el buscador del historial de accesos
+document.getElementById('access-history-search').addEventListener('input', filterAccessHistory);
   
     // Lógica para el nuevo modal de edición de transacciones
 const editTransactionModal = document.getElementById('edit-transaction-modal');
