@@ -2076,12 +2076,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Eventos para la gestión de usuarios
     document.getElementById('close-user-details-modal').addEventListener('click', closeUserDetailsModal);
-    document.getElementById('add-user-btn').addEventListener('click', () => {
-        showScreen('create-user-screen');
-        document.getElementById('create-user-title').textContent = 'Agregar Nuevo Usuario';
-        document.getElementById('create-user-form').reset();
-        document.getElementById('user-id-container').style.display = 'none';
-    });
+    document.getElementById('add-user-btn').addEventListener('click', async () => { // <-- Se convierte en async
+    showScreen('create-user-screen');
+    document.getElementById('create-user-title').textContent = 'Agregar Nuevo Usuario';
+    document.getElementById('create-user-form').reset();
+    document.getElementById('user-id-container').style.display = 'none';
+    
+    // LÍNEA AÑADIDA: Llama a la función para cargar las membresías
+    await populateMembershipOptions('user-membership'); 
+});
     document.getElementById('cancel-user-btn').addEventListener('click', () => showScreen('admin-dashboard'));
     document.getElementById('create-user-form').addEventListener('submit', (e) => {
         e.preventDefault();
@@ -2121,15 +2124,18 @@ document.getElementById('scan-qr-btn').addEventListener('click', () => {
         html5QrCode = new Html5Qrcode("qr-reader");
         
         const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-            // Cuando un QR es leído exitosamente:
-            document.getElementById('access-search-input').value = decodedText; // 1. Poner el ID en el campo
-            checkUserAccess(decodedText); // 2. Llamar a la función de verificación
-            
-            // 3. Detener el escáner y ocultarlo
-            html5QrCode.stop().then(ignore => {
-                qrReaderEl.style.display = 'none';
-            }).catch(err => console.log("No se pudo detener el escáner.", err));
-        };
+    // Cuando un QR es leído exitosamente:
+    document.getElementById('access-search-input').value = decodedText; // 1. Poner el ID en el campo
+    checkUserAccess(decodedText); // 2. Llamar a la función de verificación
+    
+    // LIMPIAMOS EL CAMPO DE BÚSQUEDA DESPUÉS DE USARLO
+    document.getElementById('access-search-input').value = ''; 
+    
+    // 3. Detener el escáner y ocultarlo
+    html5QrCode.stop().then(ignore => {
+        qrReaderEl.style.display = 'none';
+    }).catch(err => console.log("No se pudo detener el escáner.", err));
+};
         
         const config = { fps: 10, qrbox: { width: 250, height: 250 } };
         html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
