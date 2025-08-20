@@ -473,9 +473,13 @@ body.with-admin-navbar {
                     <p class="text-md text-gray-800"><span class="font-semibold">Membresía:</span> <span id="access-user-membership"></span></p>
                     <p class="text-md text-gray-800"><span class="font-semibold">Vence:</span> <span id="access-user-expiration"></span></p>
                 </div>
+              
                 <button id="manage-membership-btn" class="btn-primary mt-6 w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
                     <i class="fas fa-edit mr-2"></i> Gestionar Membresía
                 </button>
+              <button id="clear-access-btn" class="btn-primary mt-6 w-full bg-blue-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-blue-500">
+            <i class="fas fa-broom mr-2"></i> Limpiar
+        </button>
             </div>
 
         </div>
@@ -940,24 +944,34 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
                 } else {
     showScreen('user-profile-screen');
     
-    // CORRECCIÓN: Declaramos la fecha UNA SOLA VEZ aquí al principio.
-    const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
+    // ==========================================================
+    //  INICIO DE LA CORRECCIÓN DE FECHAS
+    // ==========================================================
+    const expirationDateRaw = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
 
+    // Creamos una fecha para "hoy" normalizada a las 00:00 horas.
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    // NORMALIZAMOS también la fecha de vencimiento.
+    let normalizedExpiration = null;
+    if (expirationDateRaw) {
+        normalizedExpiration = new Date(expirationDateRaw);
+        normalizedExpiration.setHours(0, 0, 0, 0);
+    }
+    // ==========================================================
+    
+    // El resto del código que llena la información del perfil no cambia
     document.getElementById('user-profile-name').textContent = userData.name;
     document.getElementById('user-profile-email').textContent = userData.email;
     document.getElementById('user-profile-id').textContent = userData.userId ? userData.userId.toString().padStart(3, '0') : 'N/A';
     document.getElementById('user-profile-membership').textContent = userData.membership;
-    
-    // 1. Usamos la variable y la nueva función para mostrar la fecha formateada.
-    document.getElementById('user-profile-expiration').textContent = formatDateToLongString(expirationDate);
-    
+    document.getElementById('user-profile-expiration').textContent = formatDateToLongString(expirationDateRaw);
     document.getElementById('user-profile-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
-                  
-    // ==========================================================
-    //  NUEVO: GENERAR Y MOSTRAR EL CÓDIGO QR
-    // ==========================================================
+    
+    // La generación del QR no cambia y seguirá funcionando perfectamente
     const qrContainer = document.getElementById('user-qrcode-container');
-    qrContainer.innerHTML = ''; // Limpiar cualquier QR anterior
+    qrContainer.innerHTML = '';
     if (userData.userId) {
         new QRCode(qrContainer, {
             text: userData.userId.toString(),
@@ -968,13 +982,11 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
             correctLevel: QRCode.CorrectLevel.H
         });
     }
-    // ==========================================================
     
-    // Lógica para la barra de progreso
-    const currentDate = new Date();
-    // 2. REUTILIZAMOS la misma variable 'expirationDate' que ya declaramos arriba.
-    const daysRemaining = expirationDate ? Math.ceil((expirationDate - currentDate) / (1000 * 60 * 60 * 24)) : 0;
+    // --- CÁLCULO DE DÍAS RESTANTES CORREGIDO ---
+    const daysRemaining = normalizedExpiration ? Math.ceil((normalizedExpiration - startOfToday) / (1000 * 60 * 60 * 24)) : 0;
     
+    // La lógica de la barra de progreso ahora funcionará correctamente con el nuevo cálculo
     const progressBar = document.getElementById('user-progress-bar');
     const renewalMessage = document.getElementById('renewal-message');
     const daysRemainingText = document.getElementById('days-remaining');
@@ -991,10 +1003,10 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
     } else if (daysRemaining > 0 && daysRemaining <= 5) {
         barColor = 'bg-yellow-500';
         barWidth = `${(daysRemaining / 5) * 100}%`;
-    } else {
+    } else { // Vencida (daysRemaining es 0 o menos)
         barColor = 'bg-red-500';
         barWidth = '0%';
-        if (expirationDate) {
+        if (expirationDateRaw) {
             messageText = 'Renueva tu membresía';
         }
     }
@@ -1674,9 +1686,11 @@ transactionsList.appendChild(listItem);
 function resetAccessControlUI() {
     const accessResultContainer = document.getElementById('access-result-container');
     const accessMainContainer = document.querySelector('#access-control-screen > div > div');
+  const searchInput = document.getElementById('access-search-input');
     
-    // Ocultar el resultado y limpiar el campo si es necesario
+    // Ocultar el resultado y limpiar el campo de texto
     accessResultContainer.style.display = 'none';
+    searchInput.value = '';
     
     // Eliminar todos los colores de estado
     accessMainContainer.classList.remove('bg-red-100', 'bg-green-100', 'bg-yellow-100', 'border-red-400', 'border-green-400', 'border-yellow-400');
@@ -1695,94 +1709,101 @@ let currentAccessUserId = null;
 
       
         async function checkUserAccess(userId) {
-            const accessResultContainer = document.getElementById('access-result-container');
-            const accessResultIcon = document.getElementById('access-result-icon');
-            const accessResultTitle = document.getElementById('access-result-title');
-            const accessResultMessage = document.getElementById('access-result-message');
-            const accessUserInfo = document.getElementById('access-user-info');
-            
-            // Resetear y ocultar resultados anteriores
-            accessResultContainer.style.display = 'none';
-            accessUserInfo.classList.add('hidden');
-            
-            // Validar que el ID no esté vacío
-            if (!userId || userId.trim() === '') {
-                showAccessResult('error', 'Campo vacío', 'Por favor ingresa un ID de usuario');
-                return;
-            }
+    const accessResultContainer = document.getElementById('access-result-container');
+    const accessResultIcon = document.getElementById('access-result-icon');
+    const accessResultTitle = document.getElementById('access-result-title');
+    const accessResultMessage = document.getElementById('access-result-message');
+    const accessUserInfo = document.getElementById('access-user-info');
+    
+    accessResultContainer.style.display = 'none';
+    accessUserInfo.classList.add('hidden');
+    
+    if (!userId || userId.trim() === '') {
+        showAccessResult('error', 'Campo vacío', 'Por favor ingresa un ID de usuario');
+        return;
+    }
 
-            // Buscar usuario por ID numérico o código de barras
-            const usersCollection = collection(db, "users");
-            let userQuery;
-            
-            // Primero intentar buscar por userId numérico
-            const numericUserId = parseInt(userId, 10);
-            if (!isNaN(numericUserId)) {
-                userQuery = query(usersCollection, where("userId", "==", numericUserId));
-            } else {
-                // Si no es numérico, buscar por otro campo (como código de barras)
-                userQuery = query(usersCollection, where("barcode", "==", userId));
-            }
+    const usersCollection = collection(db, "users");
+    let userQuery;
+    const numericUserId = parseInt(userId, 10);
+    if (!isNaN(numericUserId)) {
+        userQuery = query(usersCollection, where("userId", "==", numericUserId));
+    } else {
+        userQuery = query(usersCollection, where("barcode", "==", userId));
+    }
 
-            try {
-                const querySnapshot = await getDocs(userQuery);
+    try {
+        const querySnapshot = await getDocs(userQuery);
 
-                if (querySnapshot.empty) {
-                    showAccessResult('error', 'Usuario no encontrado', 'Verifica el ID o contacta al administrador');
-                    return;
-                }
-                
-                // Usuario encontrado
-                const userDoc = querySnapshot.docs[0];
-                const userData = userDoc.data();
-                
-                // Guardar el ID del documento para su posterior uso
-    currentAccessUserId = userDoc.id; 
-              
-                // Verificar membresía
-                const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
-                const now = new Date();
-                const isMembershipActive = expirationDate && expirationDate > now;
-                
-                // Mostrar información del usuario
-              document.getElementById('access-user-id').textContent = userData.userId.toString().padStart(3, '0') || 'N/A';
-                document.getElementById('access-user-name').textContent = userData.name || 'N/A';
-                document.getElementById('access-user-membership').textContent = userData.membership || 'N/A';
-                document.getElementById('access-user-expiration').textContent = formatDateToLongString(expirationDate);
-                
-                // Mostrar resultado según estado de membresía
-                const daysRemaining = expirationDate ? Math.ceil((expirationDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
-                
-                if (isMembershipActive) {
-                    if (daysRemaining <= 5) {
-                        showAccessResult('warning', 'Acceso Concedido', `¡Bienvenido! Tu membresía vence en ${daysRemaining} día(s).`);
-                    } else {
-                        showAccessResult('success', 'Acceso Concedido', '¡Bienvenido, disfruta tu entrenamiento!');
-                    }
-                    accessUserInfo.classList.remove('hidden');
-                } else {
-                    showAccessResult('error', 'Acceso Denegado', 'Membresía Vencida. Por favor, renueva tu plan.');
-                    accessUserInfo.classList.remove('hidden');
-                }
-              
-               // ==========================================================
-                //  NUEVO: Guardar el registro del intento de acceso
-                // ==========================================================
-                const logData = {
-                    userId: userDoc.id,
-                    userName: userData.name,
-                    timestamp: new Date(),
-                    status: isMembershipActive ? 'concedido' : 'denegado',
-                    membershipStatus: isMembershipActive ? 'Activa' : 'Vencida'
-                };
-                await addDoc(collection(db, "access_logs"), logData);
-                // ==========================================================
-                
-            } catch (error) {
-                console.error("Error al verificar acceso:", error);
-                showAccessResult('error', 'Error del sistema', 'Ocurrió un error al verificar el acceso');
-            }
+        if (querySnapshot.empty) {
+            showAccessResult('error', 'Usuario no encontrado', 'Verifica el ID o contacta al administrador');
+            return;
         }
+        
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+        currentAccessUserId = userDoc.id; 
+      
+        // ==========================================================
+        //  INICIO DE LA CORRECCIÓN DEFINITIVA
+        // ==========================================================
+        const expirationDateRaw = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
+        
+        // Creamos una fecha para "hoy" normalizada a las 00:00 horas.
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        // NORMALIZAMOS también la fecha de vencimiento a las 00:00 horas.
+        // Esto es clave para comparar solo las fechas.
+        let normalizedExpiration = null;
+        if (expirationDateRaw) {
+            normalizedExpiration = new Date(expirationDateRaw);
+            normalizedExpiration.setHours(0, 0, 0, 0);
+        }
+
+        // La membresía está activa SÓLO si la fecha de vencimiento normalizada
+        // es ESTRICTAMENTE MAYOR que el inicio del día de hoy.
+        const isMembershipActive = normalizedExpiration && normalizedExpiration > startOfToday;
+        
+        document.getElementById('access-user-id').textContent = userData.userId.toString().padStart(3, '0') || 'N/A';
+        document.getElementById('access-user-name').textContent = userData.name || 'N/A';
+        document.getElementById('access-user-membership').textContent = userData.membership || 'N/A';
+        // Mostramos la fecha original para el usuario, no la normalizada.
+        document.getElementById('access-user-expiration').textContent = formatDateToLongString(expirationDateRaw);
+        
+        // El cálculo de días restantes ahora también usa ambas fechas normalizadas.
+        const daysRemaining = normalizedExpiration ? Math.ceil((normalizedExpiration - startOfToday) / (1000 * 60 * 60 * 24)) : 0;
+        
+        // ==========================================================
+        //  FIN DE LA CORRECCIÓN DEFINITIVA
+        // ==========================================================
+        
+        if (isMembershipActive) {
+            if (daysRemaining <= 5) {
+                showAccessResult('warning', 'Acceso Concedido', `¡Bienvenido! Tu membresía vence en ${daysRemaining} día(s).`);
+            } else {
+                showAccessResult('success', 'Acceso Concedido', '¡Bienvenido, disfruta tu entrenamiento!');
+            }
+            accessUserInfo.classList.remove('hidden');
+        } else {
+            showAccessResult('error', 'Acceso Denegado', 'Membresía Vencida. Por favor, renueva tu plan.');
+            accessUserInfo.classList.remove('hidden');
+        }
+      
+        const logData = {
+            userId: userDoc.id,
+            userName: userData.name,
+            timestamp: new Date(),
+            status: isMembershipActive ? 'concedido' : 'denegado',
+            membershipStatus: isMembershipActive ? 'Activa' : 'Vencida'
+        };
+        await addDoc(collection(db, "access_logs"), logData);
+        
+    } catch (error) {
+        console.error("Error al verificar acceso:", error);
+        showAccessResult('error', 'Error del sistema', 'Ocurrió un error al verificar el acceso');
+    }
+}
 
         function showAccessResult(type, title, message) {
     const accessResultContainer = document.getElementById('access-result-container');
@@ -2109,6 +2130,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const searchTerm = e.target.value.toLowerCase();
         filterUsers(searchTerm);
     });
+  
+    // Evento para el nuevo botón de Limpiar en Control de Acceso
+document.getElementById('clear-access-btn').addEventListener('click', () => {
+    resetAccessControlUI();
+    document.getElementById('access-search-input').focus(); // Opcional: pone el cursor listo en el campo de búsqueda
+});
 
     // Eventos para la gestión de membresías
     document.getElementById('add-membership-btn').addEventListener('click', () => {
