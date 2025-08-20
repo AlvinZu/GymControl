@@ -1916,6 +1916,8 @@ async function generateReports() {
     accessHistoryListEl.innerHTML = '';
     const qHistory = query(accessLogsCollection, orderBy("timestamp", "desc"), limit(10));
     const historySnap = await getDocs(qHistory);
+  
+    console.log('Registros de historial encontrados:', historySnap.size);
 
     historySnap.forEach(doc => {
         const log = doc.data();
