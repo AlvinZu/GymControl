@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GymPro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -448,28 +450,34 @@ body.with-admin-navbar {
         <h2 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">Control de Acceso</h2>
         
         <div class="bg-white shadow-2xl rounded-3xl p-8 transform transition-transform duration-500 ease-in-out hover:scale-105">
+            
+            <div id="qr-reader" class="mb-4 w-full border rounded-lg overflow-hidden" style="display: none;"></div>
+
             <div class="relative mb-6">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <i class="fas fa-search text-gray-400"></i>
                 </div>
-                <input type="text" id="access-search-input" class="input-field block w-full pl-12 pr-4 py-4 border border-gray-300 rounded-full leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-lg" placeholder="Ingresar ID de usuario o escanear...">
+                <input type="text" id="access-search-input" class="input-field block w-full pl-12 pr-16 py-4 border border-gray-300 rounded-full leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-lg" placeholder="Ingresar ID o escanear...">
+                <button id="scan-qr-btn" title="Escanear Código QR" class="absolute inset-y-0 right-0 flex items-center pr-5 text-gray-500 hover:text-indigo-600 focus:outline-none">
+                    <i class="fas fa-qrcode text-2xl"></i>
+                </button>
             </div>
             
             <div id="access-result-container" class="mt-8 text-center animate-fadeIn" style="display: none;">
-    <div id="access-result-icon" class="text-6xl mb-4"></div>
-    <h3 id="access-result-title" class="text-3xl font-bold mb-2"></h3>
-    <p id="access-result-message" class="text-lg text-gray-600"></p>
-    <div id="access-user-info" class="mt-6 p-4 bg-gray-100 rounded-xl hidden">
-        <p class="text-md text-gray-800"><span class="font-semibold">ID:</span> <span id="access-user-id"></span></p>
-        <p class="text-md text-gray-800"><span class="font-semibold">Nombre:</span> <span id="access-user-name"></span></p>
-        <p class="text-md text-gray-800"><span class="font-semibold">Membresía:</span> <span id="access-user-membership"></span></p>
-        <p class="text-md text-gray-800"><span class="font-semibold">Vence:</span> <span id="access-user-expiration"></span></p>
-    </div>
-    
-    <button id="manage-membership-btn" class="btn-primary mt-6 w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
-        <i class="fas fa-edit mr-2"></i> Gestionar Membresía
-    </button>
-</div>
+                <div id="access-result-icon" class="text-6xl mb-4"></div>
+                <h3 id="access-result-title" class="text-3xl font-bold mb-2"></h3>
+                <p id="access-result-message" class="text-lg text-gray-600"></p>
+                <div id="access-user-info" class="mt-6 p-4 bg-gray-100 rounded-xl hidden">
+                    <p class="text-md text-gray-800"><span class="font-semibold">ID:</span> <span id="access-user-id"></span></p>
+                    <p class="text-md text-gray-800"><span class="font-semibold">Nombre:</span> <span id="access-user-name"></span></p>
+                    <p class="text-md text-gray-800"><span class="font-semibold">Membresía:</span> <span id="access-user-membership"></span></p>
+                    <p class="text-md text-gray-800"><span class="font-semibold">Vence:</span> <span id="access-user-expiration"></span></p>
+                </div>
+                <button id="manage-membership-btn" class="btn-primary mt-6 w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center">
+                    <i class="fas fa-edit mr-2"></i> Gestionar Membresía
+                </button>
+            </div>
+
         </div>
     </div>
 </div>
@@ -666,6 +674,12 @@ body.with-admin-navbar {
                                 <p id="user-profile-email" class="text-sm text-gray-500">juan@example.com</p>
                             </div>
                         </div>
+                      <div class="px-4 py-5 sm:p-6 border-t border-gray-200 text-center">
+                <h4 class="text-sm font-medium text-gray-700 mb-4">Tu QR de Acceso</h4>
+                <div id="user-qrcode-container" class="flex justify-center">
+                    </div>
+                <p class="mt-4 text-xs text-gray-500">Muestra este código en la recepción para un acceso rápido.</p>
+            </div>                      
                         
                         <div class="border-t border-gray-200 pt-5">
                             <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
@@ -934,6 +948,23 @@ function formatDateToLongString(date) {
     document.getElementById('user-profile-expiration').textContent = formatDateToLongString(expirationDate);
     
     document.getElementById('user-profile-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
+                  
+                  // ==========================================================
+    //  NUEVO: GENERAR Y MOSTRAR EL CÓDIGO QR
+    // ==========================================================
+    const qrContainer = document.getElementById('user-qrcode-container');
+    qrContainer.innerHTML = ''; // Limpiar cualquier QR anterior
+    if (userData.userId) {
+        new QRCode(qrContainer, {
+            text: userData.userId.toString(),
+            width: 128,
+            height: 128,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+    // ==========================================================
     
     // Lógica para la barra de progreso
     const currentDate = new Date();
@@ -2079,6 +2110,40 @@ document.addEventListener('DOMContentLoaded', () => {
         saveMembership(membershipId);
     });
     
+    let html5QrCode = null; // Variable para controlar el escáner
+
+// Evento para el nuevo botón de escanear QR
+document.getElementById('scan-qr-btn').addEventListener('click', () => {
+    const qrReaderEl = document.getElementById('qr-reader');
+    
+    if (qrReaderEl.style.display === 'none') {
+        qrReaderEl.style.display = 'block';
+        html5QrCode = new Html5Qrcode("qr-reader");
+        
+        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+            // Cuando un QR es leído exitosamente:
+            document.getElementById('access-search-input').value = decodedText; // 1. Poner el ID en el campo
+            checkUserAccess(decodedText); // 2. Llamar a la función de verificación
+            
+            // 3. Detener el escáner y ocultarlo
+            html5QrCode.stop().then(ignore => {
+                qrReaderEl.style.display = 'none';
+            }).catch(err => console.log("No se pudo detener el escáner.", err));
+        };
+        
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+        
+    } else {
+        // Si el escáner ya está visible, el botón lo detiene y oculta
+        if (html5QrCode) {
+            html5QrCode.stop().then(ignore => {
+                qrReaderEl.style.display = 'none';
+            }).catch(err => console.log("No se pudo detener el escáner.", err));
+        }
+    }
+});
+  
     // Evento de la pantalla de Control de Acceso (CORREGIDO)
     document.getElementById('access-search-input').addEventListener('input', (e) => {
     const userId = e.target.value.trim();
