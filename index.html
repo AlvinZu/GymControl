@@ -512,6 +512,13 @@ body.with-admin-navbar {
         <p id="active-memberships-count" class="text-6xl font-extrabold text-indigo-600">0</p>
         <p class="text-sm text-gray-500">miembros</p>
     </div>
+          
+          <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4"><i class="fas fa-chart-pie mr-2 text-purple-500"></i>Ingresos por Tipo de Membresía</h3>
+        <div class="max-w-lg mx-auto">
+             <canvas id="revenue-by-membership-chart"></canvas>
+        </div>
+    </div>
 
     <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white shadow rounded-lg p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
@@ -1819,8 +1826,7 @@ function filterAccessHistory() {
 // REPORTES
 // =================================================================
 async function generateReports() {
-    // --- (SECCIÓN 1 y 2: Ingresos y Membresías - SIN CAMBIOS) ---
-    // (Todo el código de Ingresos, Comparativa, Membresías Activas y que Vencen se mantiene igual)
+    // --- (SECCIONES 1, 2 Y 3 - SIN CAMBIOS) ---
     const monthlyIncomeEl = document.getElementById('monthly-income');
     const weeklyIncomeEl = document.getElementById('weekly-income');
     const activeMembershipsEl = document.getElementById('active-memberships-count');
@@ -1829,6 +1835,7 @@ async function generateReports() {
     const expiringCountBadge = document.getElementById('expiring-count-badge');
     const comparisonBadgeEl = document.getElementById('income-comparison-badge');
     const comparisonDetailsEl = document.getElementById('income-comparison-details');
+
     const transactionsCollection = collection(db, "transactions");
     const transactionsSnap = await getDocs(transactionsCollection);
     let monthlyIncome = 0, weeklyIncome = 0, previousMonthComparableIncome = 0;
@@ -1840,6 +1847,7 @@ async function generateReports() {
     startOfWeek.setHours(0, 0, 0, 0);
     const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfPreviousMonthComparablePeriod = new Date(now.getFullYear(), now.getMonth() - 1, todayDayOfMonth, 23, 59, 59);
+
     transactionsSnap.forEach(doc => {
         const t = doc.data();
         const pDate = new Date(t.paymentDate.seconds * 1000);
@@ -1891,8 +1899,6 @@ async function generateReports() {
     } else {
         noExpiringMessageEl.classList.remove('hidden');
     }
-
-    // --- SECCIÓN 3: Reportes de Actividad (CON CAMBIOS) ---
     const accessLogsCollection = collection(db, "access_logs");
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(now.getDate() - 30);
@@ -1912,25 +1918,78 @@ async function generateReports() {
     for (let i = 5; i <= 23; i++) { chartLabels.push(`${i}:00`); }
     const chartData = hourCounts.slice(5, 23);
     window.myPeakHoursChart = new Chart(ctx, {
-        type: 'bar',
-        data: { labels: chartLabels, datasets: [{ label: 'Nº de Accesos', data: chartData, backgroundColor: 'rgba(79, 70, 229, 0.5)', borderColor: 'rgba(79, 70, 229, 1)', borderWidth: 1 }] },
-        options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#555', font: { weight: 'bold' }, formatter: (value, context) => { return value > 0 ? value : ''; } } } }
+        type: 'bar', data: { labels: chartLabels, datasets: [{ label: 'Nº de Accesos', data: chartData, backgroundColor: 'rgba(79, 70, 229, 0.5)', borderColor: 'rgba(79, 70, 229, 1)', borderWidth: 1 }] },
+        options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#555', font: { weight: 'bold' }, formatter: (value) => value > 0 ? value : '' } } }
+    });
+    const accessHistoryListEl = document.getElementById('access-history-list');
+    accessHistoryListEl.innerHTML = '';
+    const qHistory = query(accessLogsCollection, orderBy("timestamp", "desc"), limit(10));
+    const historySnap = await getDocs(qHistory);
+    historySnap.forEach(doc => {
+        const log = doc.data();
+        const accessTime = new Date(log.timestamp.seconds * 1000);
+        const statusClass = log.status === 'concedido' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class="px-6 py-4 ...">${log.userName}</td><td ...>${accessTime.toLocaleString('es-MX')}</td><td ...><span class="... ${statusClass}">${log.status}</span></td>`;
+        accessHistoryListEl.appendChild(row);
     });
 
-    // --- Lógica MODIFICADA para el Historial de Accesos del Día ---
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
+    // ==========================================================
+    //  NUEVO: SECCIÓN 4: Gráfico de Ingresos por Membresía
+    // ==========================================================
+    const revenueByMembership = {};
+    transactionsSnap.forEach(doc => {
+        const transaction = doc.data();
+        const name = transaction.membershipName || 'Sin Nombre';
+        const price = parseFloat(transaction.price || 0);
+        if (revenueByMembership[name]) {
+            revenueByMembership[name] += price;
+        } else {
+            revenueByMembership[name] = price;
+        }
+    });
 
-    const qHistory = query(accessLogsCollection, where("timestamp", ">=", startOfDay), where("timestamp", "<=", endOfDay), orderBy("timestamp", "desc"));
-    const historySnap = await getDocs(qHistory);
+    const revenueCtx = document.getElementById('revenue-by-membership-chart').getContext('2d');
+    if (window.myRevenueChart) {
+        window.myRevenueChart.destroy();
+    }
 
-    // Guardamos los resultados en nuestra variable global
-    todaysAccessLogs = historySnap.docs.map(doc => doc.data());
-    
-    // Renderizamos la tabla con todos los registros del día
-    renderAccessHistory(todaysAccessLogs);
+    window.myRevenueChart = new Chart(revenueCtx, {
+        type: 'pie', // <-- Tipo de gráfico: pastel
+        data: {
+            labels: Object.keys(revenueByMembership),
+            datasets: [{
+                label: 'Ingresos',
+                data: Object.values(revenueByMembership),
+                backgroundColor: [ // Colores para cada sección del pastel
+                    'rgba(79, 70, 229, 0.7)',
+                    'rgba(5, 150, 105, 0.7)',
+                    'rgba(219, 39, 119, 0.7)',
+                    'rgba(245, 158, 11, 0.7)',
+                    'rgba(59, 130, 246, 0.7)',
+                    'rgba(107, 114, 128, 0.7)'
+                ],
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                // Muestra los porcentajes en cada rebanada del pastel
+                datalabels: {
+                    formatter: (value, ctx) => {
+                        const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        const percentage = (value * 100 / sum).toFixed(1) + '%';
+                        return percentage;
+                    },
+                    color: '#fff',
+                    font: { weight: 'bold', size: 14 }
+                }
+            }
+        }
+    });
 }
       
         
