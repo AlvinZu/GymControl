@@ -1891,8 +1891,17 @@ function renderAccessHistory(logsToRender) {
     const accessHistoryListEl = document.getElementById('access-history-list');
     accessHistoryListEl.innerHTML = ''; // Limpiamos la tabla
 
+    if (!logsToRender || logsToRender.length === 0) {
+        // Opcional: Mostrar un mensaje si no hay registros
+        accessHistoryListEl.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">No hay registros para mostrar.</td></tr>';
+        return;
+    }
+
     logsToRender.forEach(log => {
-        const accessTime = new Date(log.timestamp.seconds * 1000);
+        // CORRECCIÓN: 'log.timestamp' ya es un objeto de fecha válido que creamos antes.
+        // No necesita convertirse de nuevo, simplemente lo usamos directamente.
+        const accessTime = log.timestamp;
+        
         const statusClass = log.status === 'concedido' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -1926,7 +1935,7 @@ function filterAccessHistory() {
 // REPORTES
 // =================================================================
 async function generateReports() {
-    // --- (SECCIONES 1, 2 Y 3 - SIN CAMBIOS) ---
+    // --- (Tus secciones 1 y 2 para Ingresos, Membresías, etc., se mantienen intactas) ---
     const monthlyIncomeEl = document.getElementById('monthly-income');
     const weeklyIncomeEl = document.getElementById('weekly-income');
     const activeMembershipsEl = document.getElementById('active-memberships-count');
@@ -2015,28 +2024,42 @@ async function generateReports() {
     const ctx = document.getElementById('peak-hours-chart').getContext('2d');
     if (window.myPeakHoursChart) { window.myPeakHoursChart.destroy(); }
     const chartLabels = [];
-    for (let i = 5; i <= 23; i++) { chartLabels.push(`${i}:00`); }
+    for (let i = 5; i <= 22; i++) { chartLabels.push(`${i}:00`); }
     const chartData = hourCounts.slice(5, 23);
     window.myPeakHoursChart = new Chart(ctx, {
         type: 'bar', data: { labels: chartLabels, datasets: [{ label: 'Nº de Accesos', data: chartData, backgroundColor: 'rgba(79, 70, 229, 0.5)', borderColor: 'rgba(79, 70, 229, 1)', borderWidth: 1 }] },
         options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#555', font: { weight: 'bold' }, formatter: (value) => value > 0 ? value : '' } } }
     });
-    const accessHistoryListEl = document.getElementById('access-history-list');
-    accessHistoryListEl.innerHTML = '';
-    const qHistory = query(accessLogsCollection, orderBy("timestamp", "desc"), limit(10));
-    const historySnap = await getDocs(qHistory);
-    historySnap.forEach(doc => {
-        const log = doc.data();
-        const accessTime = new Date(log.timestamp.seconds * 1000);
-        const statusClass = log.status === 'concedido' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-        const row = document.createElement('tr');
-        row.innerHTML = `<td class="px-6 py-4 ...">${log.userName}</td><td ...>${accessTime.toLocaleString('es-MX')}</td><td ...><span class="... ${statusClass}">${log.status}</span></td>`;
-        accessHistoryListEl.appendChild(row);
-    });
 
     // ==========================================================
-    //  NUEVO: SECCIÓN 4: Gráfico de Ingresos por Membresía
+    //  INICIO DE LA CORRECCIÓN
+    //  Se modifica la consulta para traer todos los registros del día, sin el límite de 10.
     // ==========================================================
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const qHistory = query(accessLogsCollection, where("timestamp", ">=", startOfDay), where("timestamp", "<=", endOfDay), orderBy("timestamp", "desc"));
+    const historySnap = await getDocs(qHistory);
+
+    // Guardamos los resultados en la variable global para que el filtro funcione con todos los datos del día
+    todaysAccessLogs = historySnap.docs.map(doc => {
+        const data = doc.data();
+        // Convertimos el timestamp de Firestore a un objeto Date de JavaScript para poder filtrarlo después
+        return {
+            ...data,
+            timestamp: data.timestamp.toDate() 
+        };
+    });
+    
+    // Renderizamos la tabla con TODOS los registros del día
+    renderAccessHistory(todaysAccessLogs);
+    // ==========================================================
+    //  FIN DE LA CORRECCIÓN
+    // ==========================================================
+    
+    // La sección del gráfico de pastel se mantiene intacta
     const revenueByMembership = {};
     transactionsSnap.forEach(doc => {
         const transaction = doc.data();
@@ -2055,20 +2078,13 @@ async function generateReports() {
     }
 
     window.myRevenueChart = new Chart(revenueCtx, {
-        type: 'pie', // <-- Tipo de gráfico: pastel
+        type: 'pie',
         data: {
             labels: Object.keys(revenueByMembership),
             datasets: [{
                 label: 'Ingresos',
                 data: Object.values(revenueByMembership),
-                backgroundColor: [ // Colores para cada sección del pastel
-                    'rgba(79, 70, 229, 0.7)',
-                    'rgba(5, 150, 105, 0.7)',
-                    'rgba(219, 39, 119, 0.7)',
-                    'rgba(245, 158, 11, 0.7)',
-                    'rgba(59, 130, 246, 0.7)',
-                    'rgba(107, 114, 128, 0.7)'
-                ],
+                backgroundColor: ['rgba(79, 70, 229, 0.7)','rgba(5, 150, 105, 0.7)','rgba(219, 39, 119, 0.7)','rgba(245, 158, 11, 0.7)','rgba(59, 130, 246, 0.7)','rgba(107, 114, 128, 0.7)'],
                 borderColor: '#fff',
                 borderWidth: 2
             }]
@@ -2077,10 +2093,10 @@ async function generateReports() {
             responsive: true,
             plugins: {
                 legend: { position: 'top' },
-                // Muestra los porcentajes en cada rebanada del pastel
                 datalabels: {
                     formatter: (value, ctx) => {
                         const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        if (sum === 0) return '0%';
                         const percentage = (value * 100 / sum).toFixed(1) + '%';
                         return percentage;
                     },
