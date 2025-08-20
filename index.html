@@ -921,7 +921,44 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
                 clientNavbar.style.display = 'none';
                 adminNavbar.style.display = 'none';
             }
+          updateNavbarActiveState(screenId);
         }
+      
+      
+      function updateNavbarActiveState(activeScreenId) {
+    // 1. Mapeo de pantallas a sus botones de navegación
+    // Incluimos las pantallas de creación/edición para que su ícono principal se mantenga activo.
+    const screenToButtonMap = {
+        'admin-dashboard': 'nav-users-btn',
+        'create-user-screen': 'nav-users-btn',
+        'membership-management-screen': 'nav-memberships-btn',
+        'create-membership-screen': 'nav-memberships-btn',
+        'access-control-screen': 'nav-access-btn',
+        'reports-screen': 'nav-reports-btn',
+        'user-profile-screen': 'nav-profile-btn',
+        'user-routines-screen': 'nav-routines-btn'
+    };
+
+    // 2. Seleccionamos todos los botones de AMBAS barras de navegación
+    const allNavButtons = document.querySelectorAll('#admin-navbar button, #client-navbar button');
+
+    // 3. Reseteamos todos los botones a su estado inactivo (color gris)
+    allNavButtons.forEach(btn => {
+        btn.classList.remove('text-indigo-600');
+        btn.classList.add('text-gray-500');
+    });
+
+    // 4. Encontramos el botón que corresponde a la pantalla activa actualmente
+    const activeButtonId = screenToButtonMap[activeScreenId];
+    if (activeButtonId) {
+        const activeButton = document.getElementById(activeButtonId);
+        if (activeButton) {
+            // 5. Le aplicamos el estilo activo (color índigo)
+            activeButton.classList.remove('text-gray-500');
+            activeButton.classList.add('text-indigo-600');
+        }
+    }
+}
         
         // =================================================================
         // AUTENTICACIÓN DE USUARIOS
