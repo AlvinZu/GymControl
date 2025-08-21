@@ -338,6 +338,10 @@ body.with-admin-navbar {
                     <i class="fas fa-door-open text-xl"></i>
                     <span class="text-xs mt-1">Acceso</span>
                 </button>
+              <button id="nav-exercises-btn" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+        <i class="fas fa-dumbbell text-xl"></i>
+        <span class="text-xs mt-1">Ejercicios</span>
+    </button>
                 <button id="nav-reports-btn" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
                     <i class="fas fa-chart-bar text-xl"></i>
                     <span class="text-xs mt-1">Reportes</span>
@@ -385,6 +389,15 @@ body.with-admin-navbar {
                                     <!-- Options will be populated from Firestore -->
                                 </select>
                             </div>
+                          
+                          <div class="sm:col-span-3" id="user-role-container" style="display: none;">
+    <label for="user-role" class="block text-sm font-medium text-gray-700">Rol</label>
+    <select id="user-role" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        <option value="user">Usuario</option>
+        <option value="instructor">Instructor</option>
+        <option value="admin">Admin</option>
+    </select>
+</div>
                             
                             <div class="sm:col-span-3">
                                 <label for="user-start-date" class="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
@@ -485,7 +498,82 @@ body.with-admin-navbar {
         </div>
     </div>
 </div>
+      
+      <!-- Pantalla de Ejercicios -->
+      <div id="exercise-management-screen" class="screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">Gestión de Ejercicios</h2>
+            <button id="add-exercise-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700">
+                <i class="fas fa-plus mr-2"></i> Nuevo Ejercicio
+            </button>
+        </div>
         
+        <div id="exercise-list-container" class="space-y-8">
+            </div>
+    </div>
+</div>
+        
+      <!-- Pantalla de Instructor -->
+      <div id="instructor-dashboard" class="screen p-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Panel de Instructor</h2>
+            <button id="instructor-logout-btn" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg">Cerrar Sesión</button>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h3 class="text-lg font-semibold mb-4">1. Buscar Cliente para Asignar Rutina</h3>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" id="instructor-client-search" class="input-field block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md" placeholder="Buscar por nombre o ID...">
+            </div>
+            <div id="client-search-results" class="mt-4 max-h-48 overflow-y-auto"></div>
+        </div>
+
+        <div id="routine-builder-container" class="hidden">
+     <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-4">2. Construir Rutina para: <span id="selected-client-name" class="text-indigo-600 font-bold"></span></h3>
+        <input type="hidden" id="selected-client-id">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <div class="border rounded-lg p-4">
+                </div>
+            <div class="border rounded-lg p-4">
+                </div>
+        </div>
+
+        <div class="flex justify-end gap-4 mt-6 pt-4 border-t">
+            <button id="cancel-routine-btn" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg">
+                Cancelar
+            </button>
+            <button id="save-routine-btn" class="btn-primary bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700">
+                <i class="fas fa-save mr-2"></i> Guardar Rutina
+            </button>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+      
+      <!-- Pantalla de Mis Clientes del Instructor -->
+      <div id="my-clients-screen" class="screen p-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Mis Clientes Asignados</h2>
+            <button id="my-clients-logout-btn" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg">Cerrar Sesión</button>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow">
+            <p class="text-sm text-gray-600 mb-4">Aquí se muestran los clientes a los que ya les has asignado una rutina. Haz clic en uno para ver o modificar su plan.</p>
+            <div id="my-clients-list" class="space-y-3">
+                </div>
+        </div>
+    </div>
+</div>
+      
         <!-- Reports Screen -->
         <div id="reports-screen" class="screen p-6">
     <div class="max-w-7xl mx-auto">
@@ -658,16 +746,20 @@ body.with-admin-navbar {
       
       <!-- User Routines Screen (nueva pantalla) -->
     <div id="user-routines-screen" class="screen p-6">
-        <div class="max-w-3xl mx-auto">
-            <button id="routines-back-to-profile-btn" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
-                <i class="fas fa-arrow-left mr-2"></i> Volver a Mi Perfil
-            </button>
-            <div class="bg-white shadow overflow-hidden rounded-lg p-6 text-center">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Mi Rutina</h2>
-                <p class="text-gray-700">Aquí se mostrará tu rutina asignada por un entrenador.</p>
+    <div class="max-w-3xl mx-auto">
+        <button id="routines-back-to-profile-btn" class="self-start mb-6 text-indigo-600 hover:text-indigo-800">
+            <i class="fas fa-arrow-left mr-2"></i> Volver a Mi Perfil
+        </button>
+        <div class="bg-white shadow overflow-hidden rounded-lg">
+            <div class="px-6 py-5 border-b">
+                <h2 class="text-2xl font-bold text-gray-800">Mi Rutina Semanal</h2>
+                <p class="text-sm text-gray-500 mt-1">Asignada por: <span id="routine-instructor-name" class="font-medium">--</span></p>
             </div>
+            <div id="routine-display-container" class="p-6 space-y-6">
+                </div>
         </div>
     </div>
+</div>
         
         <!-- User Profile Screen -->
         <div id="user-profile-screen" class="screen p-6">
@@ -718,9 +810,9 @@ body.with-admin-navbar {
                                     <dd id="user-profile-benefits" class="mt-1 text-sm text-gray-900">
                                         <ul class="list-disc pl-5 space-y-1">
                                             <li>Acceso ilimitado a todas las instalaciones</li>
-                                            <li>Entrenador personal incluido (2 sesiones/mes)</li>
-                                            <li>Acceso a clases grupales premium</li>
-                                            <li>Uso ilimitado de sauna y jacuzzi</li>
+                                            <li>Entrenador de base incluido</li>
+                                            <li>Acceso a clases grupales</li>
+                                            <li>Uso del area del sauna</li>
                                         </ul>
                                     </dd>
                                 </div>
@@ -827,6 +919,20 @@ body.with-admin-navbar {
             </button>
         </div>
     </div>
+      
+      <!-- Instructor Navigation Bar (barra inferior) -->
+      <div id="instructor-navbar" class="bg-white border-t border-gray-200 py-3 px-4 fixed bottom-0 left-0 right-0 shadow-lg" style="display: none;">
+    <div class="flex justify-around max-w-md mx-auto">
+        <button id="nav-assign-routine-btn" class="flex flex-col items-center text-indigo-600">
+            <i class="fas fa-plus-circle text-xl"></i>
+            <span class="text-xs mt-1">Asignar Rutina</span>
+        </button>
+        <button id="nav-my-clients-btn" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+            <i class="fas fa-address-book text-xl"></i>
+            <span class="text-xs mt-1">Mis Clientes</span>
+        </button>
+    </div>
+</div>
 
     <script type="module">
         // =================================================================
@@ -879,6 +985,10 @@ function formatDateToLongString(date) {
       
       let todaysAccessLogs = [];
       let allTransactions = [];
+      let allExercises = [];
+      let routineBuilderPlan = {};
+      let activeDay = 'lunes';
+      let currentUserData = {};
       
 // Definición de los sonidos de acceso
 const successSound = new Audio('Acceso_Concedido.mp3');
@@ -889,86 +999,91 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
         // FUNCIONES DE NAVEGACIÓN Y LÓGICA GENERAL
         // =================================================================
         function showScreen(screenId) {
-            // Oculta todas las pantallas y remueve la clase de animación
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.style.display = 'none';
-                screen.classList.remove('active-screen');
-            });
-            
-            // Muestra la pantalla actual y añade la clase de animación
-            document.getElementById(screenId).style.display = 'flex';
-            document.getElementById(screenId).classList.add('active-screen');
+    // Oculta todas las pantallas
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.style.display = 'none';
+        screen.classList.remove('active-screen');
+    });
+    
+    // Muestra la pantalla correcta
+    const screenElement = document.getElementById(screenId);
+    if (screenElement) {
+        // Usamos 'block' para consistencia, ya que las pantallas de admin usan este display
+        screenElement.style.display = 'block'; 
+        screenElement.classList.add('active-screen');
+    }
 
-            const clientNavbar = document.getElementById('client-navbar');
-            const adminNavbar = document.getElementById('admin-navbar');
+    // Referencias a las tres barras de navegación
+    const clientNavbar = document.getElementById('client-navbar');
+    const adminNavbar = document.getElementById('admin-navbar');
+    const instructorNavbar = document.getElementById('instructor-navbar'); // <-- Nuevo
 
-            // Definimos todas las pantallas del panel de administrador
-            const adminScreens = [
-                'admin-dashboard',
-                'membership-management-screen',
-                'access-control-screen',
-                'reports-screen',
-                'create-user-screen',
-                'create-membership-screen'
-            ];
+    // Listas de pantallas para cada rol
+    const adminScreens = [
+        'admin-dashboard', 'membership-management-screen', 'access-control-screen',
+        'reports-screen', 'create-user-screen', 'create-membership-screen', 'exercise-management-screen'
+    ];
+    const clientScreens = [
+        'user-profile-screen', 'user-routines-screen'
+    ];
+    const instructorScreens = [
+        'instructor-dashboard', 'my-clients-screen' // <-- Nuevo
+    ];
 
-            // Definimos todas las pantallas del usuario cliente
-            const clientScreens = [
-                'user-profile-screen',
-                'user-routines-screen'
-            ];
+    // Lógica para mostrar la barra de navegación correcta
+    adminNavbar.style.display = adminScreens.includes(screenId) ? 'block' : 'none';
+    clientNavbar.style.display = clientScreens.includes(screenId) ? 'block' : 'none';
+    instructorNavbar.style.display = instructorScreens.includes(screenId) ? 'block' : 'none'; // <-- Nuevo
 
-            // Lógica para mostrar la barra de navegación correcta
-            if (adminScreens.includes(screenId)) {
-                adminNavbar.style.display = 'block';
-                clientNavbar.style.display = 'none';
-                // Lógica de carga de datos (se mantiene aquí)
-                if (screenId === 'admin-dashboard') {
-                    fetchUsers();
-                } else if (screenId === 'membership-management-screen') {
-                    fetchMemberships();
-                }
-            } else if (clientScreens.includes(screenId)) {
-                clientNavbar.style.display = 'block';
-                adminNavbar.style.display = 'none';
-            } else {
-                // Ocultar ambas barras en pantallas de autenticación
-                clientNavbar.style.display = 'none';
-                adminNavbar.style.display = 'none';
-            }
-          updateNavbarActiveState(screenId);
-        }
+    // Lógica para cargar datos automáticamente al entrar a ciertas pantallas (tu código se mantiene)
+    if (screenId === 'admin-dashboard') {
+        fetchUsers();
+    } else if (screenId === 'membership-management-screen') {
+        fetchMemberships();
+    } else if (screenId === 'exercise-management-screen') {
+        fetchExercises();
+    }
+    
+    // Actualiza el ícono activo en la barra de navegación
+    updateNavbarActiveState(screenId);
+}
       
       
       function updateNavbarActiveState(activeScreenId) {
-    // 1. Mapeo de pantallas a sus botones de navegación
-    // Incluimos las pantallas de creación/edición para que su ícono principal se mantenga activo.
+    // 1. Mapeo de pantallas a sus botones de navegación (actualizado)
     const screenToButtonMap = {
+        // Rol de Administrador
         'admin-dashboard': 'nav-users-btn',
         'create-user-screen': 'nav-users-btn',
         'membership-management-screen': 'nav-memberships-btn',
         'create-membership-screen': 'nav-memberships-btn',
+        'exercise-management-screen': 'nav-exercises-btn', // <-- Añadido
         'access-control-screen': 'nav-access-btn',
         'reports-screen': 'nav-reports-btn',
+        
+        // Rol de Cliente
         'user-profile-screen': 'nav-profile-btn',
-        'user-routines-screen': 'nav-routines-btn'
+        'user-routines-screen': 'nav-routines-btn',
+        
+        // Rol de Instructor
+        'instructor-dashboard': 'nav-assign-routine-btn', // <-- Añadido
+        'my-clients-screen': 'nav-my-clients-btn'      // <-- Añadido
     };
 
-    // 2. Seleccionamos todos los botones de AMBAS barras de navegación
-    const allNavButtons = document.querySelectorAll('#admin-navbar button, #client-navbar button');
+    // 2. Seleccionamos todos los botones de las TRES barras de navegación
+    const allNavButtons = document.querySelectorAll('#admin-navbar button, #client-navbar button, #instructor-navbar button');
 
-    // 3. Reseteamos todos los botones a su estado inactivo (color gris)
+    // 3. Reseteamos todos los botones a su estado inactivo (sin cambios en esta lógica)
     allNavButtons.forEach(btn => {
         btn.classList.remove('text-indigo-600');
         btn.classList.add('text-gray-500');
     });
 
-    // 4. Encontramos el botón que corresponde a la pantalla activa actualmente
+    // 4. Encontramos y activamos el botón correcto (sin cambios en esta lógica)
     const activeButtonId = screenToButtonMap[activeScreenId];
     if (activeButtonId) {
         const activeButton = document.getElementById(activeButtonId);
         if (activeButton) {
-            // 5. Le aplicamos el estilo activo (color índigo)
             activeButton.classList.remove('text-gray-500');
             activeButton.classList.add('text-indigo-600');
         }
@@ -979,105 +1094,107 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
         // AUTENTICACIÓN DE USUARIOS
         // =================================================================
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const usersCollection = collection(db, "users");
-                const userQuery = await getDocs(usersCollection);
-                let userRole = 'user';
-                let userData = {};
-                userQuery.forEach(doc => {
-                    if (doc.data().uid === user.uid) {
-                        userData = doc.data();
-                        userRole = userData.role;
-                    }
-                });
+    if (user) {
+        // --- BÚSQUEDA DE USUARIO MEJORADA ---
+        // Se busca directamente por el UID del usuario autenticado, es más eficiente
+        // que traer todos los usuarios y luego buscar.
+        const usersCollection = collection(db, "users");
+        const q = query(usersCollection, where("uid", "==", user.uid));
+        const userQuerySnap = await getDocs(q);
 
-                if (userRole === 'admin') {
-                    showScreen('admin-dashboard');
+        if (!userQuerySnap.empty) {
+            const userDoc = userQuerySnap.docs[0];
+            const userData = userDoc.data();
+            currentUserData = { id: userDoc.id, ...userData }; // Guardamos los datos del usuario actual
+            const userRole = userData.role;
+
+            // --- LÓGICA DE REDIRECCIÓN BASADA EN ROL ---
+            if (userRole === 'admin') {
+                showScreen('admin-dashboard');
+            } else if (userRole === 'instructor') { // NUEVA LÓGICA PARA INSTRUCTOR
+                showScreen('instructor-dashboard');
+            } else { // Para rol 'user', se mantiene todo tu código existente
+                showScreen('user-profile-screen');
+    
+                // --- INICIO DE TU CÓDIGO DE PERFIL (INTACTO) ---
+                const expirationDateRaw = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
+
+                const startOfToday = new Date();
+                startOfToday.setHours(0, 0, 0, 0);
+
+                let normalizedExpiration = null;
+                if (expirationDateRaw) {
+                    normalizedExpiration = new Date(expirationDateRaw);
+                    normalizedExpiration.setHours(0, 0, 0, 0);
+                }
+                
+                document.getElementById('user-profile-name').textContent = userData.name;
+                document.getElementById('user-profile-email').textContent = userData.email;
+                document.getElementById('user-profile-id').textContent = userData.userId ? userData.userId.toString().padStart(3, '0') : 'N/A';
+                document.getElementById('user-profile-membership').textContent = userData.membership;
+                document.getElementById('user-profile-expiration').textContent = formatDateToLongString(expirationDateRaw);
+                document.getElementById('user-profile-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
+                
+                const qrContainer = document.getElementById('user-qrcode-container');
+                qrContainer.innerHTML = '';
+                if (userData.userId) {
+                    new QRCode(qrContainer, {
+                        text: userData.userId.toString(),
+                        width: 128,
+                        height: 128,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                }
+                
+                const daysRemaining = normalizedExpiration ? Math.ceil((normalizedExpiration - startOfToday) / (1000 * 60 * 60 * 24)) : 0;
+                
+                const progressBar = document.getElementById('user-progress-bar');
+                const renewalMessage = document.getElementById('renewal-message');
+                const daysRemainingText = document.getElementById('days-remaining');
+
+                daysRemainingText.textContent = daysRemaining > 0 ? daysRemaining : 0;
+                
+                let barColor = 'bg-gray-200';
+                let barWidth = '0%';
+                let messageText = '';
+
+                if (daysRemaining > 5) {
+                    barColor = 'bg-green-500';
+                    barWidth = '100%';
+                } else if (daysRemaining > 0 && daysRemaining <= 5) {
+                    barColor = 'bg-yellow-500';
+                    barWidth = `${(daysRemaining / 5) * 100}%`;
                 } else {
-    showScreen('user-profile-screen');
-    
-    // ==========================================================
-    //  INICIO DE LA CORRECCIÓN DE FECHAS
-    // ==========================================================
-    const expirationDateRaw = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
+                    barColor = 'bg-red-500';
+                    barWidth = '0%';
+                    if (expirationDateRaw) {
+                        messageText = 'Renueva tu membresía';
+                    }
+                }
 
-    // Creamos una fecha para "hoy" normalizada a las 00:00 horas.
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-
-    // NORMALIZAMOS también la fecha de vencimiento.
-    let normalizedExpiration = null;
-    if (expirationDateRaw) {
-        normalizedExpiration = new Date(expirationDateRaw);
-        normalizedExpiration.setHours(0, 0, 0, 0);
-    }
-    // ==========================================================
-    
-    // El resto del código que llena la información del perfil no cambia
-    document.getElementById('user-profile-name').textContent = userData.name;
-    document.getElementById('user-profile-email').textContent = userData.email;
-    document.getElementById('user-profile-id').textContent = userData.userId ? userData.userId.toString().padStart(3, '0') : 'N/A';
-    document.getElementById('user-profile-membership').textContent = userData.membership;
-    document.getElementById('user-profile-expiration').textContent = formatDateToLongString(expirationDateRaw);
-    document.getElementById('user-profile-initials').textContent = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'NA';
-    
-    // La generación del QR no cambia y seguirá funcionando perfectamente
-    const qrContainer = document.getElementById('user-qrcode-container');
-    qrContainer.innerHTML = '';
-    if (userData.userId) {
-        new QRCode(qrContainer, {
-            text: userData.userId.toString(),
-            width: 128,
-            height: 128,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-    }
-    
-    // --- CÁLCULO DE DÍAS RESTANTES CORREGIDO ---
-    const daysRemaining = normalizedExpiration ? Math.ceil((normalizedExpiration - startOfToday) / (1000 * 60 * 60 * 24)) : 0;
-    
-    // La lógica de la barra de progreso ahora funcionará correctamente con el nuevo cálculo
-    const progressBar = document.getElementById('user-progress-bar');
-    const renewalMessage = document.getElementById('renewal-message');
-    const daysRemainingText = document.getElementById('days-remaining');
-
-    daysRemainingText.textContent = daysRemaining > 0 ? daysRemaining : 0;
-    
-    let barColor = 'bg-gray-200';
-    let barWidth = '0%';
-    let messageText = '';
-
-    if (daysRemaining > 5) {
-        barColor = 'bg-green-500';
-        barWidth = '100%';
-    } else if (daysRemaining > 0 && daysRemaining <= 5) {
-        barColor = 'bg-yellow-500';
-        barWidth = `${(daysRemaining / 5) * 100}%`;
-    } else { // Vencida (daysRemaining es 0 o menos)
-        barColor = 'bg-red-500';
-        barWidth = '0%';
-        if (expirationDateRaw) {
-            messageText = 'Renueva tu membresía';
-        }
-    }
-
-    if (progressBar) {
-        progressBar.className = `h-2.5 rounded-full ${barColor}`;
-        progressBar.style.width = barWidth;
-    }
-    if (renewalMessage) {
-        renewalMessage.textContent = messageText;
-        renewalMessage.classList.toggle('hidden', messageText === '');
-    }
-}
-            } else {
-                document.getElementById('admin-navbar').style.display = 'none';
-                document.getElementById('client-navbar').style.display = 'none';
-                showScreen('welcome-screen');
+                if (progressBar) {
+                    progressBar.className = `h-2.5 rounded-full ${barColor}`;
+                    progressBar.style.width = barWidth;
+                }
+                if (renewalMessage) {
+                    renewalMessage.textContent = messageText;
+                    renewalMessage.classList.toggle('hidden', messageText === '');
+                }
+                // --- FIN DE TU CÓDIGO DE PERFIL ---
             }
-        });
+        } else {
+            alert("Error: No se encontraron datos para este usuario en la base de datos. Contacta al administrador.");
+            signOut(auth);
+        }
+    } else {
+        currentUserData = {}; // Limpiar datos al cerrar sesión
+        document.getElementById('admin-navbar').style.display = 'none';
+        document.getElementById('client-navbar').style.display = 'none';
+        showScreen('welcome-screen');
+    }
+});
         
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1287,62 +1404,70 @@ function filterUsers(searchTerm) {
     const membershipId = document.getElementById('user-membership').value;
     const startDateInput = document.getElementById('user-start-date').value;
     const manualUserId = document.getElementById('user-id-input').value;
+    const role = document.getElementById('user-role').value; // <-- Se obtiene el nuevo rol del formulario
 
-    if (!name || !email || !membershipId || !startDateInput) {
-        alert('Por favor, completa todos los campos obligatorios.');
+    // Se ajusta la validación: Nombre y correo son siempre obligatorios.
+    if (!name || !email) {
+        alert('El nombre y el correo electrónico son campos obligatorios.');
+        return;
+    }
+    // Si se está creando un usuario nuevo, la membresía y fecha son obligatorias.
+    if (!userId && (!membershipId || !startDateInput)) {
+        alert('Para un nuevo usuario, debes seleccionar una membresía y una fecha de inicio.');
         return;
     }
 
     try {
-        const membershipRef = doc(db, "memberships", membershipId);
-        const membershipSnap = await getDoc(membershipRef);
-        const membershipData = membershipSnap.data();
-
         let userDocId = userId;
-
-        // --- INICIA CÁLCULO DE FECHA CORREGIDO ---
-        // Se añade 'T00:00:00' para que los navegadores interpreten la fecha consistentemente en la zona horaria local.
-        const startDate = new Date(startDateInput + 'T00:00:00');
         
-        // Calculamos la fecha de vencimiento para la nueva transacción
-        const newExpirationDate = new Date(startDate);
-        newExpirationDate.setDate(startDate.getDate() + parseInt(membershipData.duration));
-        // --- FIN CÁLCULO DE FECHA CORREGIDO ---
-
         if (userId) { // --- MODO EDICIÓN ---
             const userRef = doc(db, "users", userId);
             await updateDoc(userRef, {
                 name: name,
                 email: email,
-                userId: parseInt(manualUserId)
+                userId: parseInt(manualUserId),
+                role: role // <-- Se guarda el rol seleccionado en la base de datos
             });
+
         } else { // --- MODO CREACIÓN ---
             const newDocRef = await addDoc(collection(db, "users"), {
                 name: name,
                 email: email,
                 membership: 'Ninguna',
                 expiration: null,
-                role: 'user',
+                role: 'user', // Los usuarios nuevos siempre empiezan con el rol 'user'
                 userId: await getNextUserId()
             });
             userDocId = newDocRef.id;
         }
 
-        // Se crea el registro de la transacción
-        await addDoc(collection(db, "transactions"), {
-            userId: userDocId,
-            name: name,
-            membershipName: membershipData.name,
-            duration: membershipData.duration,
-            price: membershipData.price,
-            paymentDate: startDate, // Usamos la fecha de inicio corregida
-            expirationDate: newExpirationDate
-        });
+        // --- LÓGICA DE TRANSACCIÓN CONDICIONAL ---
+        // Solo se crea una nueva transacción si se seleccionó una membresía.
+        if (membershipId && startDateInput) {
+            const membershipRef = doc(db, "memberships", membershipId);
+            const membershipSnap = await getDoc(membershipRef);
+            const membershipData = membershipSnap.data();
 
-        // Paso Clave: Se recalcula la fecha de vencimiento final del usuario
-        await updateUserExpiration(userDocId);
+            const startDate = new Date(startDateInput + 'T00:00:00');
+            const newExpirationDate = new Date(startDate);
+            newExpirationDate.setDate(startDate.getDate() + parseInt(membershipData.duration));
+
+            // Se crea el registro de la transacción
+            await addDoc(collection(db, "transactions"), {
+                userId: userDocId,
+                name: name,
+                membershipName: membershipData.name,
+                duration: membershipData.duration,
+                price: membershipData.price,
+                paymentDate: startDate,
+                expirationDate: newExpirationDate
+            });
+
+            // Se recalcula la fecha de vencimiento final del usuario
+            await updateUserExpiration(userDocId);
+        }
         
-        alert(userId ? 'Usuario actualizado y membresía añadida.' : 'Usuario creado exitosamente.');
+        alert(userId ? 'Usuario actualizado exitosamente.' : 'Usuario creado exitosamente.');
         showScreen('admin-dashboard');
         
     } catch (error) {
@@ -1368,36 +1493,33 @@ function filterUsers(searchTerm) {
         document.getElementById('user-id-input').value = userData.userId;
         document.getElementById('user-id-container').style.display = 'block';
 
-        // --- INICIA LA LÓGICA DE FECHA CORREGIDA ---
+        // --- NUEVO: Mostrar y seleccionar el rol del usuario ---
+        document.getElementById('user-role-container').style.display = 'block';
+        document.getElementById('user-role').value = userData.role;
+        // --- FIN DE LO NUEVO ---
+
         const expirationDate = userData.expiration ? new Date(userData.expiration.seconds * 1000) : null;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-
-        let startDateForField = new Date(); // Por defecto, hoy
-
+        let startDateForField = new Date();
         if (expirationDate && expirationDate > today) {
-            // La nueva membresía debe iniciar el día SIGUIENTE al vencimiento.
             startDateForField = new Date(expirationDate);
             startDateForField.setDate(startDateForField.getDate() + 1);
         }
-        
-        // Formateamos la fecha a YYYY-MM-DD manualmente para evitar errores de zona horaria
         const year = startDateForField.getFullYear();
         const month = (startDateForField.getMonth() + 1).toString().padStart(2, '0');
         const day = startDateForField.getDate().toString().padStart(2, '0');
-        
         document.getElementById('user-start-date').value = `${year}-${month}-${day}`;
-        // --- FIN DE LA LÓGICA DE FECHA CORREGIDA ---
 
     } else {
         alert("No se encontró el usuario.");
         showScreen('admin-dashboard');
         return;
     }
-            
-            // Llenamos las opciones de membresías al final
-            await populateMembershipOptions('user-membership');
-        }
+    
+    await populateMembershipOptions('user-membership');
+}
+      
       
       async function updateUserExpiration(userDocId) {
             try {
@@ -1516,6 +1638,444 @@ function filterUsers(searchTerm) {
                 fetchMemberships();
             }
         }
+      
+      
+// =================================================================
+// GESTIÓN DE EJERCICIOS (NUEVA SECCIÓN)
+// =================================================================
+
+// Carga y muestra todos los ejercicios desde Firestore, agrupados por músculo
+async function fetchExercises() {
+    const container = document.getElementById('exercise-list-container');
+    container.innerHTML = '<p>Cargando ejercicios...</p>';
+
+    const exercisesCollection = collection(db, "exercises");
+    const exercisesSnap = await getDocs(exercisesCollection);
+    
+    const exercisesByGroup = {};
+    exercisesSnap.forEach(doc => {
+        const exercise = { id: doc.id, ...doc.data() };
+        const group = exercise.muscleGroup;
+        if (!exercisesByGroup[group]) {
+            exercisesByGroup[group] = [];
+        }
+        exercisesByGroup[group].push(exercise);
+    });
+
+    container.innerHTML = '';
+    if (Object.keys(exercisesByGroup).length === 0) {
+        container.innerHTML = '<p>No hay ejercicios en la base de datos. ¡Añade el primero!</p>';
+        return;
+    }
+
+    for (const group in exercisesByGroup) {
+        const groupContainer = document.createElement('div');
+        groupContainer.innerHTML = `<h3 class="text-xl font-semibold border-b pb-2 mb-4">${group}</h3>`;
+        const list = document.createElement('ul');
+        list.className = 'space-y-3';
+        
+        exercisesByGroup[group].forEach(exercise => {
+            const listItem = document.createElement('li');
+            listItem.className = 'bg-gray-50 p-4 rounded-lg flex justify-between items-center';
+            listItem.innerHTML = `
+                <div>
+                    <p class="font-bold">${exercise.name}</p>
+                    <p class="text-sm text-gray-600">${exercise.description || 'Sin descripción.'}</p>
+                </div>
+                <div>
+                    <button class="edit-exercise-btn text-indigo-600 hover:text-indigo-900 mr-3" data-id="${exercise.id}"><i class="fas fa-edit"></i></button>
+                    <button class="delete-exercise-btn text-red-600 hover:text-red-900" data-id="${exercise.id}"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+            list.appendChild(listItem);
+        });
+        
+        groupContainer.appendChild(list);
+        container.appendChild(groupContainer);
+    }
+}
+
+// Guarda un ejercicio (nuevo o editado) en Firestore
+async function saveExercise() {
+    const docId = document.getElementById('exercise-doc-id').value;
+    const exerciseData = {
+        name: document.getElementById('exercise-name').value,
+        muscleGroup: document.getElementById('exercise-muscle-group').value,
+        description: document.getElementById('exercise-description').value,
+        imageUrl: document.getElementById('exercise-image-url').value,
+    };
+
+    if (docId) { // Editar
+        await updateDoc(doc(db, "exercises", docId), exerciseData);
+        alert('Ejercicio actualizado');
+    } else { // Crear
+        await addDoc(collection(db, "exercises"), exerciseData);
+        alert('Ejercicio creado');
+    }
+
+    document.getElementById('exercise-modal').classList.add('hidden');
+    fetchExercises();
+}
+
+// Prepara el modal para editar un ejercicio existente
+async function editExercise(docId) {
+    const exerciseRef = doc(db, "exercises", docId);
+    const exerciseSnap = await getDoc(exerciseRef);
+    if (exerciseSnap.exists()) {
+        const data = exerciseSnap.data();
+        document.getElementById('exercise-modal-title').textContent = 'Editar Ejercicio';
+        document.getElementById('exercise-doc-id').value = docId;
+        document.getElementById('exercise-name').value = data.name;
+        document.getElementById('exercise-muscle-group').value = data.muscleGroup;
+        document.getElementById('exercise-description').value = data.description || '';
+        document.getElementById('exercise-image-url').value = data.imageUrl || '';
+        document.getElementById('exercise-modal').classList.remove('hidden');
+    }
+}
+
+// Elimina un ejercicio de Firestore
+async function deleteExercise(docId) {
+    if (confirm('¿Estás seguro de que quieres eliminar este ejercicio?')) {
+        await deleteDoc(doc(db, "exercises", docId));
+        alert('Ejercicio eliminado');
+        fetchExercises();
+    }
+}
+      
+      
+// =================================================================
+// VISTA DE RUTINA DEL CLIENTE (NUEVA SECCIÓN)
+// =================================================================
+async function fetchAndDisplayUserRoutine() {
+    const container = document.getElementById('routine-display-container');
+    container.innerHTML = '<p>Buscando tu rutina...</p>';
+
+    if (!currentUserData || !currentUserData.id) {
+        container.innerHTML = '<p>Error: No se pudo identificar al usuario.</p>';
+        return;
+    }
+
+    const routinesCollection = collection(db, "routines");
+    const q = query(routinesCollection, where("clientId", "==", currentUserData.id));
+    const routineSnap = await getDocs(q);
+
+    if (routineSnap.empty) {
+        document.getElementById('routine-instructor-name').textContent = 'N/A';
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">Aún no tienes una rutina asignada. ¡Pídesela a tu instructor!</p>';
+        return;
+    }
+
+    const routineData = routineSnap.docs[0].data();
+    const weeklyPlan = routineData.weeklyPlan;
+    const assignedDate = new Date(routineData.assignedDate.seconds * 1000);
+
+    document.getElementById('routine-instructor-name').textContent = `${routineData.instructorName} el ${formatDateToLongString(assignedDate)}`;
+    container.innerHTML = '';
+
+    const daysOrder = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+
+    daysOrder.forEach(day => {
+        if (weeklyPlan[day] && weeklyPlan[day].length > 0) {
+            const dayCard = document.createElement('div');
+            
+            let exercisesHtml = weeklyPlan[day].map(ex => `
+                <li class="flex justify-between items-center py-2">
+                    <span class="font-medium">${ex.exerciseName}</span>
+                    <span class="text-gray-600">${ex.sets} x ${ex.reps}</span>
+                </li>
+            `).join('');
+
+            dayCard.innerHTML = `
+                <h4 class="text-lg font-semibold capitalize mb-2">${day}</h4>
+                <ul class="divide-y divide-gray-200">
+                    ${exercisesHtml}
+                </ul>
+            `;
+            container.appendChild(dayCard);
+        }
+    });
+}
+      
+      
+// =================================================================
+// PANEL DE INSTRUCTOR (NUEVA SECCIÓN)
+// =================================================================
+
+// Busca clientes en la base de datos y los muestra
+async function searchClients() {
+    const searchTerm = document.getElementById('instructor-client-search').value.toLowerCase();
+    const resultsContainer = document.getElementById('client-search-results');
+    resultsContainer.innerHTML = '';
+
+    // CORRECCIÓN 1: Permite buscar desde el primer caracter.
+    if (searchTerm.length < 1) { 
+        document.getElementById('routine-builder-container').classList.add('hidden');
+        return;
+    }
+
+    const usersCollection = collection(db, "users");
+    const q = query(usersCollection, where("role", "==", "user"));
+    const querySnapshot = await getDocs(q);
+
+    const matchingClients = [];
+    querySnapshot.forEach(doc => {
+        const client = { id: doc.id, ...doc.data() };
+        const clientName = (client.name || '').toLowerCase();
+        
+        // CORRECCIÓN 2: Formatea el ID de la base de datos a 3 dígitos (ej. 5 -> "005") antes de comparar.
+        const clientId = client.userId ? client.userId.toString().padStart(3, '0') : '';
+
+        if (clientName.includes(searchTerm) || clientId.includes(searchTerm)) {
+            matchingClients.push(client);
+        }
+    });
+
+    if (matchingClients.length > 0) {
+        matchingClients.forEach(client => {
+            const clientDiv = document.createElement('div');
+            clientDiv.className = 'p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0';
+            clientDiv.textContent = `${client.name} (ID: ${client.userId.toString().padStart(3, '0')})`;
+            clientDiv.onclick = () => selectClientForRoutine(client.id, client.name);
+            resultsContainer.appendChild(clientDiv);
+        });
+    } else {
+        resultsContainer.innerHTML = '<p class="p-3 text-gray-500">No se encontraron clientes.</p>';
+    }
+}
+
+// Se ejecuta al seleccionar un cliente de la lista
+function selectClientForRoutine(clientId, clientName) {
+    // Ocultar resultados y limpiar la búsqueda
+    document.getElementById('client-search-results').innerHTML = '';
+    document.getElementById('instructor-client-search').value = '';
+    
+    // Mostrar el contenedor principal del constructor de rutinas
+    document.getElementById('routine-builder-container').classList.remove('hidden');
+    
+    // Rellenar los datos del cliente que hemos seleccionado
+    document.getElementById('selected-client-name').textContent = clientName;
+    document.getElementById('selected-client-id').value = clientId;
+    
+    // ---- LÍNEA CLAVE AÑADIDA ----
+    // Llama a la función principal que carga los ejercicios Y la rutina del cliente
+    initializeRoutineBuilder(clientId); 
+}
+      
+
+// Prepara el constructor: carga ejercicios y la rutina existente del cliente
+async function initializeRoutineBuilder(clientId) {
+    routineBuilderPlan = { lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], domingo: [] };
+    activeDay = 'lunes';
+
+    const exercisesCollection = collection(db, "exercises");
+    const exercisesSnap = await getDocs(exercisesCollection);
+    allExercises = exercisesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const filterTabsContainer = document.getElementById('exercise-filter-tabs');
+    filterTabsContainer.innerHTML = '';
+    const muscleGroups = ['Todos', ...new Set(allExercises.map(ex => ex.muscleGroup))];
+    muscleGroups.forEach(group => {
+        const tab = document.createElement('button');
+        tab.className = 'px-3 py-1 text-sm rounded-full border bg-white hover:bg-gray-100';
+        tab.textContent = group;
+        tab.onclick = () => renderExerciseLibrary(group);
+        filterTabsContainer.appendChild(tab);
+    });
+
+    // Cargar la rutina existente del cliente, si la tiene
+    const routinesCollection = collection(db, "routines");
+    const q = query(routinesCollection, where("clientId", "==", clientId));
+    const routineSnap = await getDocs(q);
+    if (!routineSnap.empty) {
+        const existingRoutine = routineSnap.docs[0].data().weeklyPlan;
+        // Fusionar la rutina existente con la plantilla vacía para asegurar que todos los días existan
+        routineBuilderPlan = { ...routineBuilderPlan, ...existingRoutine };
+    }
+
+    renderExerciseLibrary();
+    renderDaySelectorTabs();
+    renderWeeklyPlanDay();
+}
+
+// Muestra los ejercicios en la biblioteca, filtrados por grupo muscular
+function renderExerciseLibrary(muscleGroup = 'Todos') {
+    const libraryList = document.getElementById('exercise-library-list');
+    libraryList.innerHTML = '';
+    const filteredExercises = (muscleGroup === 'Todos') ? allExercises : allExercises.filter(ex => ex.muscleGroup === muscleGroup);
+
+    filteredExercises.forEach(exercise => {
+        const exerciseDiv = document.createElement('div');
+        exerciseDiv.className = 'p-2 border rounded flex justify-between items-center';
+        exerciseDiv.innerHTML = `<span>${exercise.name}</span>
+            <button class="add-exercise-btn text-green-500 hover:text-green-700 text-lg">
+                <i class="fas fa-plus-circle"></i>
+            </button>`;
+        exerciseDiv.querySelector('.add-exercise-btn').onclick = () => addExerciseToPlan(exercise.id, exercise.name);
+        libraryList.appendChild(exerciseDiv);
+    });
+}
+
+// ---- NUEVAS FUNCIONES PARA EL PANEL DERECHO ----
+
+// Dibuja las pestañas de los días de la semana
+function renderDaySelectorTabs() {
+    const daysContainer = document.getElementById('day-selector-tabs');
+    daysContainer.innerHTML = '';
+    Object.keys(routineBuilderPlan).forEach(day => {
+        const dayTab = document.createElement('button');
+        dayTab.textContent = day.charAt(0).toUpperCase() + day.slice(1);
+        const isActive = day === activeDay;
+        dayTab.className = `capitalize px-4 py-2 text-sm -mb-px border-b-2 ${isActive ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`;
+        dayTab.onclick = () => {
+            activeDay = day;
+            renderDaySelectorTabs();
+            renderWeeklyPlanDay();
+        };
+        daysContainer.appendChild(dayTab);
+    });
+}
+
+// Dibuja la lista de ejercicios para el día activo
+function renderWeeklyPlanDay() {
+    const planContainer = document.getElementById('weekly-plan-container');
+    planContainer.innerHTML = '';
+    const exercisesForDay = routineBuilderPlan[activeDay];
+
+    if (!exercisesForDay || exercisesForDay.length === 0) {
+        planContainer.innerHTML = '<p class="text-gray-400 text-center p-4">Añade ejercicios desde la biblioteca.</p>';
+        return;
+    }
+
+    exercisesForDay.forEach((exercise, index) => {
+        const exerciseEl = document.createElement('div');
+        exerciseEl.className = 'p-2 border rounded grid grid-cols-6 gap-2 items-center';
+        
+        // CORRECCIÓN 2: Se añaden las clases de estilo completas a los inputs
+        exerciseEl.innerHTML = `
+            <span class="col-span-3 font-medium">${exercise.exerciseName}</span>
+            <input class="input-field border border-gray-300 rounded-md py-1 px-2 col-span-1 text-center" type="text" placeholder="Sets" value="${exercise.sets || ''}">
+            <input class="input-field border border-gray-300 rounded-md py-1 px-2 col-span-1 text-center" type="text" placeholder="Reps" value="${exercise.reps || ''}">
+            <button class="remove-exercise-btn col-span-1 text-red-500 hover:text-red-700 justify-self-end">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        
+        // CORRECCIÓN 1: Se añade la funcionalidad a los botones de forma más robusta
+        const inputs = exerciseEl.querySelectorAll('input');
+        inputs[0].oninput = (e) => updateSetsReps(index, 'sets', e.target.value);
+        inputs[1].oninput = (e) => updateSetsReps(index, 'reps', e.target.value);
+        
+        exerciseEl.querySelector('.remove-exercise-btn').onclick = () => removeExerciseFromPlan(index);
+
+        planContainer.appendChild(exerciseEl);
+    });
+}
+
+// Añade un ejercicio al día activo
+function addExerciseToPlan(exerciseId, exerciseName) {
+    routineBuilderPlan[activeDay].push({ exerciseId, exerciseName, sets: '', reps: '' });
+    renderWeeklyPlanDay();
+}
+
+// Actualiza las series o repeticiones de un ejercicio
+function updateSetsReps(index, field, value) {
+    routineBuilderPlan[activeDay][index][field] = value;
+}
+
+// Elimina un ejercicio del día activo
+function removeExerciseFromPlan(index) {
+    routineBuilderPlan[activeDay].splice(index, 1);
+    renderWeeklyPlanDay();
+}
+
+// Guarda la rutina completa en Firestore
+async function saveRoutine() {
+    const clientId = document.getElementById('selected-client-id').value;
+    if (!clientId) {
+        alert('Por favor, selecciona un cliente primero.');
+        return;
+    }
+
+    try {
+        const routinesCollection = collection(db, "routines");
+        // Buscamos si ya existe una rutina para este cliente
+        const q = query(routinesCollection, where("clientId", "==", clientId));
+        const routineSnap = await getDocs(q);
+
+        const routineData = {
+            clientId: clientId,
+            clientName: document.getElementById('selected-client-name').textContent,
+            instructorId: currentUserData.id,
+            instructorName: currentUserData.name,
+            assignedDate: new Date(),
+            weeklyPlan: routineBuilderPlan
+        };
+
+        if (routineSnap.empty) { // No existe, la creamos
+            await addDoc(routinesCollection, routineData);
+        } else { // Ya existe, la actualizamos
+            const docId = routineSnap.docs[0].id;
+            await updateDoc(doc(db, "routines", docId), routineData);
+        }
+        
+        alert('¡Rutina guardada exitosamente!');
+        // Opcional: limpiar el constructor
+        document.getElementById('routine-builder-container').classList.add('hidden');
+
+    } catch (error) {
+        console.error("Error al guardar la rutina: ", error);
+        alert('Ocurrió un error al guardar la rutina.');
+    }
+}
+      
+      // NUEVA FUNCIÓN: Carga y muestra los clientes asignados al instructor actual
+async function fetchMyClients() {
+    const listContainer = document.getElementById('my-clients-list');
+    listContainer.innerHTML = '<p>Cargando clientes...</p>';
+
+    if (!currentUserData || !currentUserData.id) return;
+
+    const routinesCollection = collection(db, "routines");
+    const q = query(routinesCollection, where("instructorId", "==", currentUserData.id));
+    const routinesSnap = await getDocs(q);
+
+    if (routinesSnap.empty) {
+        listContainer.innerHTML = '<p class="text-gray-500">Aún no has asignado ninguna rutina.</p>';
+        return;
+    }
+
+    listContainer.innerHTML = '';
+    routinesSnap.forEach(doc => {
+        const routine = doc.data();
+        const clientDiv = document.createElement('div');
+        clientDiv.className = 'p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer rounded-lg border';
+        clientDiv.textContent = routine.clientName;
+        // Al hacer clic, se abre el constructor con la rutina de este cliente
+        clientDiv.onclick = () => {
+            showScreen('instructor-dashboard');
+            selectClientForRoutine(routine.clientId, routine.clientName);
+        };
+        listContainer.appendChild(clientDiv);
+    });
+}
+      
+      // NUEVA FUNCIÓN: Resetea la pantalla de "Asignar Rutina"
+function cancelRoutineBuilder() {
+    // Oculta el constructor
+    document.getElementById('routine-builder-container').classList.add('hidden');
+    
+    // Limpia los campos y resultados
+    document.getElementById('instructor-client-search').value = '';
+    document.getElementById('client-search-results').innerHTML = '';
+    document.getElementById('selected-client-id').value = '';
+    document.getElementById('selected-client-name').textContent = '';
+
+    // Resetea las variables del plan
+    routineBuilderPlan = {};
+    activeDay = 'lunes';
+}
+      
+      
         
         // =================================================================
         // DETALLES DEL USUARIO (MODAL)
@@ -2215,7 +2775,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Eventos de la barra de navegación del cliente
     document.getElementById('nav-profile-btn').addEventListener('click', () => showScreen('user-profile-screen'));
-    document.getElementById('nav-routines-btn').addEventListener('click', () => showScreen('user-routines-screen'));
+    document.getElementById('nav-routines-btn').addEventListener('click', () => {
+    showScreen('user-routines-screen');
+    fetchAndDisplayUserRoutine(); 
+});
     document.getElementById('routines-back-to-profile-btn').addEventListener('click', () => showScreen('user-profile-screen'));
     
     // Eventos de la barra de navegación del administrador
@@ -2334,6 +2897,80 @@ document.getElementById('scan-qr-btn').addEventListener('click', () => {
                 qrReaderEl.style.display = 'none';
             }).catch(err => console.log("No se pudo detener el escáner.", err));
         }
+    }
+});
+  
+    // Evento para el nuevo botón de navegación de ejercicios
+document.getElementById('nav-exercises-btn').addEventListener('click', () => {
+    showScreen('exercise-management-screen');
+    fetchExercises(); // Carga los ejercicios al mostrar la pantalla
+});
+
+// Eventos para el modal de ejercicios
+const exerciseModal = document.getElementById('exercise-modal');
+document.getElementById('add-exercise-btn').addEventListener('click', () => {
+    document.getElementById('exercise-form').reset();
+    document.getElementById('exercise-doc-id').value = '';
+    document.getElementById('exercise-modal-title').textContent = 'Nuevo Ejercicio';
+    exerciseModal.classList.remove('hidden');
+});
+
+document.getElementById('close-exercise-modal').addEventListener('click', () => {
+    exerciseModal.classList.add('hidden');
+});
+
+document.getElementById('exercise-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    saveExercise();
+});
+  
+  // Botón de logout para el instructor
+document.getElementById('instructor-logout-btn').addEventListener('click', () => {
+    signOut(auth);
+});
+
+// Buscador de clientes del instructor
+document.getElementById('instructor-client-search').addEventListener('input', searchClients);
+  
+// AÑADE ESTE NUEVO BLOQUE para la tecla Enter
+document.getElementById('instructor-client-search').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Previene cualquier comportamiento por defecto del navegador
+        searchClients();    // Llama a la misma función de búsqueda que ya tienes
+    }
+});
+  
+// Botón de Guardar Rutina del instructor
+document.getElementById('save-routine-btn').addEventListener('click', saveRoutine);
+  
+// Botón de cancelar para editar una rutina del instructor
+document.getElementById('cancel-routine-btn').addEventListener('click', cancelRoutineBuilder);
+  
+// Botón de logout para el instructor en la pantalla de "Mis Clientes"
+document.getElementById('my-clients-logout-btn').addEventListener('click', () => {
+    signOut(auth);
+});
+
+// Eventos para la nueva barra de navegación del instructor
+document.getElementById('nav-assign-routine-btn').addEventListener('click', () => {
+    showScreen('instructor-dashboard');
+});
+
+document.getElementById('nav-my-clients-btn').addEventListener('click', () => {
+    showScreen('my-clients-screen');
+    fetchMyClients(); // Llama a la función para cargar la lista
+});
+  
+// Event Delegation para los botones de editar y eliminar ejercicios
+document.getElementById('exercise-list-container').addEventListener('click', (e) => {
+    const editBtn = e.target.closest('.edit-exercise-btn');
+    const deleteBtn = e.target.closest('.delete-exercise-btn');
+    
+    if (editBtn) {
+        editExercise(editBtn.dataset.id);
+    }
+    if (deleteBtn) {
+        deleteExercise(deleteBtn.dataset.id);
     }
 });
   
@@ -2485,6 +3122,56 @@ document.getElementById('cancel-edit-transaction-btn').addEventListener('click',
                 <button type="submit" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm text-sm font-medium hover:bg-indigo-700">
                     Guardar Cambios
                 </button>
+            </div>
+        </form>
+    </div>
+</div>
+      
+      
+      <div id="exercise-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg animate-fadeIn flex flex-col max-h-[90vh]">
+        
+        <div class="flex justify-between items-center border-b px-6 py-4 flex-shrink-0">
+            <h3 id="exercise-modal-title" class="text-lg font-semibold">Nuevo Ejercicio</h3>
+            <button type="button" id="close-exercise-modal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+
+        <form id="exercise-form" class="flex flex-col overflow-hidden">
+            <div class="p-6 space-y-4 overflow-y-auto">
+                <input type="hidden" id="exercise-doc-id">
+                <div>
+                    <label for="exercise-name" class="block text-sm font-medium text-gray-700">Nombre del Ejercicio</label>
+                    <input type="text" id="exercise-name" required class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="exercise-muscle-group" class="block text-sm font-medium text-gray-700">Grupo Muscular</label>
+                    <select id="exercise-muscle-group" required class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="Pecho">Pecho</option>
+                        <option value="Tríceps">Tríceps</option>
+                        <option value="Espalda">Espalda</option>
+                        <option value="Hombro">Hombro</option>
+                        <option value="Bíceps">Bíceps</option>
+                        <option value="Pierna">Pierna</option>
+                        <option value="Entre Pierna">Entre Pierna</option>
+                        <option value="Gluteos">Gluteos</option>
+                        <option value="Femoral">Femoral</option>
+                        <option value="Pantorrilla">Pantorrilla</option>
+                        <option value="Abdomen">Abdomen</option>
+                        <option value="Cardio">Cardio</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="exercise-description" class="block text-sm font-medium text-gray-700">Descripción (Opcional)</label>
+                    <textarea id="exercise-description" rows="3" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                </div>
+                <div>
+                    <label for="exercise-image-url" class="block text-sm font-medium text-gray-700">URL de Imagen/GIF (Opcional)</label>
+                    <input type="url" id="exercise-image-url" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+            </div>
+
+            <div class="flex justify-end bg-gray-50 px-6 py-3 border-t flex-shrink-0">
+                <button type="submit" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md">Guardar Ejercicio</button>
             </div>
         </form>
     </div>
