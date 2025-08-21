@@ -557,6 +557,10 @@ body.with-admin-navbar {
                 <div id="weekly-plan-container" class="flex-grow max-h-96 overflow-y-auto space-y-2">
                     </div>
             </div>
+          <div class="mt-6 pt-4 border-t">
+            <label for="routine-notes" class="block text-sm font-medium text-gray-700">Notas Adicionales para el Cliente</label>
+            <textarea id="routine-notes" rows="3" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" placeholder="Ej: ¡Recuerda calentar bien antes de empezar y estirar al final!"></textarea>
+        </div>
 
         </div>
         <div class="flex justify-end gap-4 mt-6 pt-4 border-t">
@@ -771,6 +775,11 @@ body.with-admin-navbar {
             </div>
             <div id="routine-display-container" class="p-6 space-y-6">
                 </div>
+          <div id="routine-notes-display" class="hidden p-6 border-t bg-yellow-50">
+                <h4 class="text-lg font-semibold text-yellow-800 mb-2"><i class="fas fa-sticky-note mr-2"></i>Nota del Instructor</h4>
+                <p id="routine-notes-text" class="text-gray-700 whitespace-pre-wrap"></p>
+            </div>
+          
         </div>
     </div>
 </div>
@@ -1762,7 +1771,12 @@ async function deleteExercise(docId) {
 // =================================================================
 async function fetchAndDisplayUserRoutine() {
     const container = document.getElementById('routine-display-container');
+    // AÑADIDO: Referencias a los nuevos elementos para las notas
+    const notesContainer = document.getElementById('routine-notes-display');
+    const notesText = document.getElementById('routine-notes-text');
+    
     container.innerHTML = '<p>Buscando tu rutina...</p>';
+    notesContainer.classList.add('hidden'); // AÑADIDO: Ocultamos las notas al iniciar la carga
 
     if (!currentUserData || !currentUserData.id) {
         container.innerHTML = '<p>Error: No se pudo identificar al usuario.</p>';
@@ -1791,6 +1805,7 @@ async function fetchAndDisplayUserRoutine() {
     daysOrder.forEach(day => {
         if (weeklyPlan[day] && weeklyPlan[day].length > 0) {
             const dayCard = document.createElement('div');
+            dayCard.className = 'space-y-2'; // Se añade un poco de espaciado
             
             let exercisesHtml = weeklyPlan[day].map(ex => `
                 <li class="flex justify-between items-center py-2">
@@ -1808,6 +1823,12 @@ async function fetchAndDisplayUserRoutine() {
             container.appendChild(dayCard);
         }
     });
+
+    // AÑADIDO: Lógica para buscar y mostrar las notas al final
+    if (routineData.notes && routineData.notes.trim() !== '') {
+        notesText.textContent = routineData.notes;
+        notesContainer.classList.remove('hidden');
+    }
 }
       
       
@@ -1878,13 +1899,17 @@ function selectClientForRoutine(clientId, clientName) {
 
 // Prepara el constructor: carga ejercicios y la rutina existente del cliente
 async function initializeRoutineBuilder(clientId) {
+    // Resetea el estado del plan para el nuevo cliente
     routineBuilderPlan = { lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], domingo: [] };
     activeDay = 'lunes';
+    document.getElementById('routine-notes').value = ''; // Limpia el campo de notas
 
+    // Carga la biblioteca completa de ejercicios desde Firestore
     const exercisesCollection = collection(db, "exercises");
     const exercisesSnap = await getDocs(exercisesCollection);
     allExercises = exercisesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
+    // Dibuja las pestañas de filtro por grupo muscular
     const filterTabsContainer = document.getElementById('exercise-filter-tabs');
     filterTabsContainer.innerHTML = '';
     const muscleGroups = ['Todos', ...new Set(allExercises.map(ex => ex.muscleGroup))];
@@ -1896,16 +1921,20 @@ async function initializeRoutineBuilder(clientId) {
         filterTabsContainer.appendChild(tab);
     });
 
-    // Cargar la rutina existente del cliente, si la tiene
+    // Busca y carga la rutina existente del cliente, si la tiene
     const routinesCollection = collection(db, "routines");
     const q = query(routinesCollection, where("clientId", "==", clientId));
     const routineSnap = await getDocs(q);
     if (!routineSnap.empty) {
-        const existingRoutine = routineSnap.docs[0].data().weeklyPlan;
-        // Fusionar la rutina existente con la plantilla vacía para asegurar que todos los días existan
+        const routineDoc = routineSnap.docs[0].data();
+        const existingRoutine = routineDoc.weeklyPlan;
+        // Fusiona la rutina existente con la plantilla para asegurar que todos los días existan
         routineBuilderPlan = { ...routineBuilderPlan, ...existingRoutine };
+        // Rellena el campo de notas si existen
+        document.getElementById('routine-notes').value = routineDoc.notes || ''; 
     }
 
+    // Dibuja todos los componentes de la interfaz del constructor
     renderExerciseLibrary();
     renderDaySelectorTabs();
     renderWeeklyPlanDay();
@@ -2022,7 +2051,8 @@ async function saveRoutine() {
             instructorId: currentUserData.id,
             instructorName: currentUserData.name,
             assignedDate: new Date(),
-            weeklyPlan: routineBuilderPlan
+            weeklyPlan: routineBuilderPlan,
+            notes: document.getElementById('routine-notes').value
         };
 
         if (routineSnap.empty) { // No existe, la creamos
