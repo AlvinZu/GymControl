@@ -535,16 +535,30 @@ body.with-admin-navbar {
 
         <div id="routine-builder-container" class="hidden">
      <div class="bg-white p-6 rounded-lg shadow">
-        <h3 class="text-lg font-semibold mb-4">2. Construir Rutina para: <span id="selected-client-name" class="text-indigo-600 font-bold"></span></h3>
+        <div class="flex justify-between items-center">
+             <h3 class="text-lg font-semibold mb-4">2. Construir Rutina para: <span id="selected-client-name" class="text-indigo-600 font-bold"></span></h3>
+        </div>
         <input type="hidden" id="selected-client-id">
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <div class="border rounded-lg p-4">
-                </div>
-            <div class="border rounded-lg p-4">
-                </div>
-        </div>
 
+            <div class="border rounded-lg p-4 flex flex-col">
+                <h4 class="font-bold mb-3">Biblioteca de Ejercicios</h4>
+                <div id="exercise-filter-tabs" class="flex flex-wrap gap-2 mb-3">
+                    </div>
+                <div id="exercise-library-list" class="flex-grow max-h-96 overflow-y-auto space-y-2">
+                    </div>
+            </div>
+
+            <div class="border rounded-lg p-4 flex flex-col">
+                <h4 class="font-bold mb-3">Plan Semanal</h4>
+                <div id="day-selector-tabs" class="flex flex-wrap border-b mb-3">
+                    </div>
+                <div id="weekly-plan-container" class="flex-grow max-h-96 overflow-y-auto space-y-2">
+                    </div>
+            </div>
+
+        </div>
         <div class="flex justify-end gap-4 mt-6 pt-4 border-t">
             <button id="cancel-routine-btn" class="btn-primary bg-gray-200 text-gray-700 py-2 px-4 rounded-lg">
                 Cancelar
