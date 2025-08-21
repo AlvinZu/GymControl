@@ -511,6 +511,12 @@ body.with-admin-navbar {
             </div>
         </div>
     </div>
+          <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4"><i class="fas fa-calendar-alt mr-2 text-teal-500"></i>Ingresos por Mes</h3>
+        <div>
+             <canvas id="monthly-income-chart"></canvas>
+        </div>
+    </div>
 
     <div class="col-span-1 bg-white shadow rounded-lg p-6 flex flex-col items-center justify-center text-center">
         <h3 class="text-lg font-medium text-gray-900 mb-2"><i class="fas fa-chart-line mr-2 text-indigo-500"></i>Comparativa Mensual</h3>
@@ -526,11 +532,17 @@ body.with-admin-navbar {
     </div>
           
           <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white shadow rounded-lg p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4"><i class="fas fa-chart-pie mr-2 text-purple-500"></i>Ingresos por Tipo de Membresía</h3>
-        <div class="max-w-lg mx-auto">
-             <canvas id="revenue-by-membership-chart"></canvas>
-        </div>
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">
+            <i class="fas fa-chart-pie mr-2 text-purple-500"></i>Ingresos por Tipo de Membresía
+        </h3>
+        <select id="revenue-by-month-select" class="input-field block border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none sm:text-sm">
+            </select>
     </div>
+    <div class="max-w-lg mx-auto">
+         <canvas id="revenue-by-membership-chart"></canvas>
+    </div>
+</div>
 
     <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white shadow rounded-lg p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
@@ -864,6 +876,7 @@ function formatDateToLongString(date) {
       Chart.register(ChartDataLabels);
       
       let todaysAccessLogs = [];
+      let allTransactions = [];
       
 // Definición de los sonidos de acceso
 const successSound = new Audio('Acceso_Concedido.mp3');
@@ -1931,11 +1944,94 @@ function filterAccessHistory() {
 }
       
       
+      // NUEVA FUNCIÓN: Rellena el menú desplegable con los meses disponibles
+function populateMonthFilter() {
+    const monthSelect = document.getElementById('revenue-by-month-select');
+    monthSelect.innerHTML = '<option value="all">Todos los Tiempos</option>';
+    
+    const uniqueMonths = new Set();
+    allTransactions.forEach(transaction => {
+        const date = new Date(transaction.paymentDate.seconds * 1000);
+        const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+        uniqueMonths.add(monthKey);
+    });
+
+    // Ordenar meses del más reciente al más antiguo
+    const sortedMonths = Array.from(uniqueMonths).sort((a, b) => new Date(b.split('-')[0], b.split('-')[1]) - new Date(a.split('-')[0], a.split('-')[1]));
+
+    sortedMonths.forEach(monthKey => {
+        const [year, month] = monthKey.split('-');
+        const date = new Date(year, month);
+        const option = document.createElement('option');
+        option.value = monthKey;
+        option.textContent = date.toLocaleString('es-MX', { month: 'long', year: 'numeric' });
+        monthSelect.appendChild(option);
+    });
+}
+
+// NUEVA FUNCIÓN: Actualiza el gráfico de pastel según el mes seleccionado
+function updateRevenuePieChart(selectedMonthKey) {
+    let filteredTransactions = allTransactions;
+
+    // Si se selecciona un mes específico, filtramos las transacciones
+    if (selectedMonthKey !== 'all') {
+        const [year, month] = selectedMonthKey.split('-').map(Number);
+        filteredTransactions = allTransactions.filter(transaction => {
+            const date = new Date(transaction.paymentDate.seconds * 1000);
+            return date.getFullYear() === year && date.getMonth() === month;
+        });
+    }
+
+    // Calculamos los ingresos a partir de las transacciones filtradas
+    const revenueByMembership = {};
+    filteredTransactions.forEach(transaction => {
+        const name = transaction.membershipName || 'Sin Nombre';
+        const price = parseFloat(transaction.price || 0);
+        revenueByMembership[name] = (revenueByMembership[name] || 0) + price;
+    });
+
+    // Dibujamos el gráfico
+    const revenueCtx = document.getElementById('revenue-by-membership-chart').getContext('2d');
+    if (window.myRevenueChart) {
+        window.myRevenueChart.destroy();
+    }
+    window.myRevenueChart = new Chart(revenueCtx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(revenueByMembership),
+            datasets: [{
+                label: 'Ingresos',
+                data: Object.values(revenueByMembership),
+                backgroundColor: ['rgba(79, 70, 229, 0.7)', 'rgba(5, 150, 105, 0.7)', 'rgba(219, 39, 119, 0.7)', 'rgba(245, 158, 11, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(107, 114, 128, 0.7)'],
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                datalabels: {
+                    formatter: (value, ctx) => {
+                        const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        if (sum === 0) return '0%';
+                        const percentage = (value * 100 / sum).toFixed(1) + '%';
+                        return percentage;
+                    },
+                    color: '#fff',
+                    font: { weight: 'bold', size: 14 }
+                }
+            }
+        }
+    });
+}
+      
+      
 // =================================================================
 // REPORTES
 // =================================================================
 async function generateReports() {
-    // --- (Tus secciones 1 y 2 para Ingresos, Membresías, etc., se mantienen intactas) ---
+    // Referencias a los elementos del DOM
     const monthlyIncomeEl = document.getElementById('monthly-income');
     const weeklyIncomeEl = document.getElementById('weekly-income');
     const activeMembershipsEl = document.getElementById('active-memberships-count');
@@ -1945,40 +2041,63 @@ async function generateReports() {
     const comparisonBadgeEl = document.getElementById('income-comparison-badge');
     const comparisonDetailsEl = document.getElementById('income-comparison-details');
 
+    // Carga inicial de todas las transacciones para usar en múltiples reportes
     const transactionsCollection = collection(db, "transactions");
     const transactionsSnap = await getDocs(transactionsCollection);
-    let monthlyIncome = 0, weeklyIncome = 0, previousMonthComparableIncome = 0;
+    allTransactions = transactionsSnap.docs.map(doc => doc.data());
+
+    // --- CÁLCULO DE INGRESOS POR MES (PARA GRÁFICO Y COMPARATIVA) ---
+    const monthlyTotals = {};
+    allTransactions.forEach(transaction => {
+        const date = new Date(transaction.paymentDate.seconds * 1000);
+        const year = date.getFullYear();
+        const month = date.getMonth(); // 0-11
+        const monthKey = `${year}-${month}`;
+        const price = parseFloat(transaction.price || 0);
+        if (monthlyTotals[monthKey]) {
+            monthlyTotals[monthKey].total += price;
+        } else {
+            monthlyTotals[monthKey] = { total: price, year: year, month: month };
+        }
+    });
+
     const now = new Date();
-    const todayDayOfMonth = now.getDate();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // --- TARJETAS DE INGRESOS Y COMPARATIVA ---
+    const currentMonthKey = `${now.getFullYear()}-${now.getMonth()}`;
+    const monthlyIncome = monthlyTotals[currentMonthKey] ? monthlyTotals[currentMonthKey].total : 0;
+    
+    let weeklyIncome = 0;
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
     startOfWeek.setHours(0, 0, 0, 0);
-    const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfPreviousMonthComparablePeriod = new Date(now.getFullYear(), now.getMonth() - 1, todayDayOfMonth, 23, 59, 59);
-
-    transactionsSnap.forEach(doc => {
-        const t = doc.data();
+    allTransactions.forEach(t => {
         const pDate = new Date(t.paymentDate.seconds * 1000);
-        const price = parseFloat(t.price || 0);
-        if (pDate >= startOfMonth) monthlyIncome += price;
-        if (pDate >= startOfWeek) weeklyIncome += price;
-        if (pDate >= startOfPreviousMonth && pDate <= endOfPreviousMonthComparablePeriod) previousMonthComparableIncome += price;
+        if (pDate >= startOfWeek) {
+            weeklyIncome += parseFloat(t.price || 0);
+        }
     });
+    
     monthlyIncomeEl.textContent = `$${monthlyIncome.toFixed(2)}`;
     weeklyIncomeEl.textContent = `$${weeklyIncome.toFixed(2)}`;
-    if (previousMonthComparableIncome > 0) {
-        const pChange = ((monthlyIncome - previousMonthComparableIncome) / previousMonthComparableIncome) * 100;
-        comparisonBadgeEl.textContent = pChange >= 0 ? `▲ +${pChange.toFixed(1)}%` : `▼ ${pChange.toFixed(1)}%`;
-        comparisonBadgeEl.className = `text-5xl font-extrabold mt-2 ${pChange >= 0 ? 'text-green-600' : 'text-red-600'}`;
-    } else if (monthlyIncome > 0) {
-        comparisonBadgeEl.textContent = '▲';
-        comparisonBadgeEl.className = 'text-5xl font-extrabold mt-2 text-green-600';
+    
+    const previousMonthDate = new Date(now.getFullYear(), now.getMonth() - 1);
+    const prevMonthKey = `${previousMonthDate.getFullYear()}-${previousMonthDate.getMonth()}`;
+    const previousMonthTotalIncome = monthlyTotals[prevMonthKey] ? monthlyTotals[prevMonthKey].total : 0;
+
+    comparisonBadgeEl.classList.remove('text-green-600', 'text-red-600', 'text-gray-500');
+    const difference = monthlyIncome - previousMonthTotalIncome;
+
+    if (difference >= 0) {
+        comparisonBadgeEl.textContent = `▲ +$${difference.toFixed(2)}`;
+        comparisonBadgeEl.classList.add('text-green-600');
     } else {
-        comparisonBadgeEl.textContent = '0%';
-        comparisonBadgeEl.className = 'text-5xl font-extrabold mt-2 text-gray-500';
+        comparisonBadgeEl.textContent = `▼ -$${Math.abs(difference).toFixed(2)}`;
+        comparisonBadgeEl.classList.add('text-red-600');
     }
-    comparisonDetailsEl.textContent = `Mes anterior: $${previousMonthComparableIncome.toFixed(2)}`;
+    comparisonDetailsEl.textContent = `más que el mes anterior (total: $${previousMonthTotalIncome.toFixed(2)})`;
+    
+    // --- TARJETAS DE MIEMBROS ACTIVOS Y POR VENCER ---
     const usersCollection = collection(db, "users");
     const usersSnap = await getDocs(usersCollection);
     let activeCount = 0;
@@ -2008,6 +2127,8 @@ async function generateReports() {
     } else {
         noExpiringMessageEl.classList.remove('hidden');
     }
+    
+    // --- REPORTES DE ACTIVIDAD (GRÁFICO DE HORAS PICO E HISTORIAL) ---
     const accessLogsCollection = collection(db, "access_logs");
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(now.getDate() - 30);
@@ -2030,82 +2151,39 @@ async function generateReports() {
         type: 'bar', data: { labels: chartLabels, datasets: [{ label: 'Nº de Accesos', data: chartData, backgroundColor: 'rgba(79, 70, 229, 0.5)', borderColor: 'rgba(79, 70, 229, 1)', borderWidth: 1 }] },
         options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#555', font: { weight: 'bold' }, formatter: (value) => value > 0 ? value : '' } } }
     });
-
-    // ==========================================================
-    //  INICIO DE LA CORRECCIÓN
-    //  Se modifica la consulta para traer todos los registros del día, sin el límite de 10.
-    // ==========================================================
+    
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
-
     const qHistory = query(accessLogsCollection, where("timestamp", ">=", startOfDay), where("timestamp", "<=", endOfDay), orderBy("timestamp", "desc"));
     const historySnap = await getDocs(qHistory);
-
-    // Guardamos los resultados en la variable global para que el filtro funcione con todos los datos del día
     todaysAccessLogs = historySnap.docs.map(doc => {
         const data = doc.data();
-        // Convertimos el timestamp de Firestore a un objeto Date de JavaScript para poder filtrarlo después
-        return {
-            ...data,
-            timestamp: data.timestamp.toDate() 
-        };
+        return { ...data, timestamp: data.timestamp.toDate() };
     });
-    
-    // Renderizamos la tabla con TODOS los registros del día
     renderAccessHistory(todaysAccessLogs);
-    // ==========================================================
-    //  FIN DE LA CORRECCIÓN
-    // ==========================================================
     
-    // La sección del gráfico de pastel se mantiene intacta
-    const revenueByMembership = {};
-    transactionsSnap.forEach(doc => {
-        const transaction = doc.data();
-        const name = transaction.membershipName || 'Sin Nombre';
-        const price = parseFloat(transaction.price || 0);
-        if (revenueByMembership[name]) {
-            revenueByMembership[name] += price;
-        } else {
-            revenueByMembership[name] = price;
-        }
+    // --- GRÁFICO DE INGRESOS POR MES ---
+    const sortedMonths = Object.values(monthlyTotals).sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.month - b.month;
+    });
+    const monthLabels = sortedMonths.map(item => {
+        const date = new Date(item.year, item.month);
+        return date.toLocaleString('es-MX', { month: 'short', year: 'numeric' });
+    });
+    const monthData = sortedMonths.map(item => item.total);
+    const monthlyIncomeCtx = document.getElementById('monthly-income-chart').getContext('2d');
+    if (window.myMonthlyIncomeChart) { window.myMonthlyIncomeChart.destroy(); }
+    window.myMonthlyIncomeChart = new Chart(monthlyIncomeCtx, {
+        type: 'bar', data: { labels: monthLabels, datasets: [{ label: 'Ingresos Totales', data: monthData, backgroundColor: 'rgba(22, 163, 74, 0.5)', borderColor: 'rgba(22, 163, 74, 1)', borderWidth: 1 }] },
+        options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', formatter: (value) => `$${value.toFixed(2)}`, color: '#374151' } } }
     });
 
-    const revenueCtx = document.getElementById('revenue-by-membership-chart').getContext('2d');
-    if (window.myRevenueChart) {
-        window.myRevenueChart.destroy();
-    }
-
-    window.myRevenueChart = new Chart(revenueCtx, {
-        type: 'pie',
-        data: {
-            labels: Object.keys(revenueByMembership),
-            datasets: [{
-                label: 'Ingresos',
-                data: Object.values(revenueByMembership),
-                backgroundColor: ['rgba(79, 70, 229, 0.7)','rgba(5, 150, 105, 0.7)','rgba(219, 39, 119, 0.7)','rgba(245, 158, 11, 0.7)','rgba(59, 130, 246, 0.7)','rgba(107, 114, 128, 0.7)'],
-                borderColor: '#fff',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'top' },
-                datalabels: {
-                    formatter: (value, ctx) => {
-                        const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                        if (sum === 0) return '0%';
-                        const percentage = (value * 100 / sum).toFixed(1) + '%';
-                        return percentage;
-                    },
-                    color: '#fff',
-                    font: { weight: 'bold', size: 14 }
-                }
-            }
-        }
-    });
+    // --- GRÁFICO DE PASTEL INTERACTIVO (Ingresos por Membresía) ---
+    populateMonthFilter();
+    updateRevenuePieChart('all'); // Muestra el estado inicial con todos los datos
 }
       
         
@@ -2189,6 +2267,11 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById('clear-access-btn').addEventListener('click', () => {
     resetAccessControlUI();
     document.getElementById('access-search-input').focus(); // Opcional: pone el cursor listo en el campo de búsqueda
+});
+  
+    // Evento para el nuevo filtro de mes del gráfico de ingresos
+document.getElementById('revenue-by-month-select').addEventListener('change', (e) => {
+    updateRevenuePieChart(e.target.value);
 });
 
     // Eventos para la gestión de membresías
