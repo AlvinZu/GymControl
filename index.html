@@ -2289,13 +2289,25 @@ transactionsList.appendChild(listItem);
     form.querySelector('#transaction-doc-id').value = transactionId;
     form.querySelector('#transaction-user-id').value = transactionData.userId;
 
-    // Rellenar la fecha de pago actual
+    // ==========================================================
+    //  INICIO DE LA CORRECCIÓN DE FECHA
+    // ==========================================================
+    // Obtenemos la fecha de pago y la convertimos a un objeto Date local
     const paymentDate = new Date(transactionData.paymentDate.seconds * 1000);
-    form.querySelector('#transaction-payment-date').value = paymentDate.toISOString().split('T')[0];
+    
+    // Formateamos la fecha a YYYY-MM-DD manualmente para evitar errores de zona horaria
+    const year = paymentDate.getFullYear();
+    const month = (paymentDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = paymentDate.getDate().toString().padStart(2, '0');
+    
+    form.querySelector('#transaction-payment-date').value = `${year}-${month}-${day}`;
+    // ==========================================================
+    //  FIN DE LA CORRECCIÓN
+    // ==========================================================
 
-    // Cargar todas las membresías en el menú desplegable
+    // Cargar todas las membresías en el menú desplegable (tu código se mantiene)
     const selectElement = form.querySelector('#transaction-membership-select');
-    selectElement.innerHTML = ''; // Limpiar opciones anteriores
+    selectElement.innerHTML = '';
     const membershipsCollection = collection(db, "memberships");
     const membershipSnapshot = await getDocs(membershipsCollection);
     
@@ -2306,7 +2318,6 @@ transactionsList.appendChild(listItem);
         option.value = doc.id;
         option.textContent = `${membership.name} (${membership.duration} días)`;
         selectElement.appendChild(option);
-        // Si encontramos la membresía actual de la transacción, guardamos su ID para seleccionarla
         if (membership.name === transactionData.membershipName) {
             selectedMembershipId = doc.id;
         }
