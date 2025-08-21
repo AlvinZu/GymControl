@@ -1212,11 +1212,16 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
             signOut(auth);
         }
     } else {
-        currentUserData = {}; // Limpiar datos al cerrar sesión
-        document.getElementById('admin-navbar').style.display = 'none';
-        document.getElementById('client-navbar').style.display = 'none';
-        showScreen('welcome-screen');
-    }
+    currentUserData = {}; // Limpiar datos al cerrar sesión
+    document.getElementById('admin-navbar').style.display = 'none';
+    document.getElementById('client-navbar').style.display = 'none';
+    document.getElementById('instructor-navbar').style.display = 'none';
+    
+    // LÍNEA AÑADIDA: Resetea el formulario de login para borrar los campos
+    document.getElementById('login-form').reset();
+    
+    showScreen('welcome-screen');
+}
 });
         
         document.getElementById('login-form').addEventListener('submit', async (e) => {
