@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GymPro</title>
+    <link rel="icon" type="image/png" href="icon-192x192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -17,7 +18,7 @@
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <link rel="manifest" href="manifest.json">
   
-    <style>
+    <style> 
       
       /* Ajuste para la barra de navegación fija */
 body.with-admin-navbar {
@@ -135,8 +136,20 @@ body.with-admin-navbar {
 }
       
     </style>
+  
 </head>
-<body class="bg-gray-100 font-sans pb-16">
+<body class="bg-gray-100 font-sans pt-16 pb-16">
+  <header id="main-header" class="bg-indigo-600 text-white p-4 text-xl font-bold fixed top-0 left-0 right-0 z-50 flex items-center justify-between">
+    <div class="w-10"></div> 
+    
+    <span class="text-center">Gym Control</span>
+    
+    <div class="w-10 text-right">
+        <button id="video-library-btn" title="Videoteca" class="text-white hover:text-gray-200">
+            <i class="fas fa-video"></i>
+        </button>
+    </div>
+</header>
     <!-- App Container -->
     <div class="min-h-screen flex flex-col">
         <!-- Welcome Screen -->
@@ -510,6 +523,26 @@ body.with-admin-navbar {
         </div>
         
         <div id="exercise-list-container" class="space-y-8">
+            </div>
+    </div>
+</div>
+      
+      <!-- Pantalla de Videos de ejercicios -->
+      <div id="video-library-screen" class="screen p-6" style="display: none;">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">Videoteca de Ejercicios</h2>
+            <div class="flex space-x-4">
+                <button id="add-video-btn" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700">
+                    <i class="fas fa-plus mr-2"></i> Agregar Video
+                </button>
+                <button id="videos-back-to-users-btn" title="Volver a Usuarios" class="btn-primary bg-gray-200 text-gray-700 w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-300">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="video-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             </div>
     </div>
 </div>
@@ -940,6 +973,10 @@ body.with-admin-navbar {
                 <i class="fas fa-running text-xl"></i>
                 <span class="text-xs mt-1">Rutinas</span>
             </button>
+            <button id="nav-client-videos-btn" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+            <i class="fas fa-video text-xl"></i>
+            <span class="text-xs mt-1">Videoteca</span>
+        </button>
         </div>
     </div>
       
@@ -953,6 +990,10 @@ body.with-admin-navbar {
         <button id="nav-my-clients-btn" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
             <i class="fas fa-address-book text-xl"></i>
             <span class="text-xs mt-1">Mis Clientes</span>
+        </button>
+        <button id="nav-instructor-videos-btn" class="flex flex-col items-center text-gray-500 hover:text-indigo-600">
+            <i class="fas fa-video text-xl"></i>
+            <span class="text-xs mt-1">Videoteca</span>
         </button>
     </div>
 </div>
@@ -1039,24 +1080,26 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
     // Referencias a las tres barras de navegación
     const clientNavbar = document.getElementById('client-navbar');
     const adminNavbar = document.getElementById('admin-navbar');
-    const instructorNavbar = document.getElementById('instructor-navbar'); // <-- Nuevo
+    const instructorNavbar = document.getElementById('instructor-navbar');
 
-    // Listas de pantallas para cada rol
-    const adminScreens = [
-        'admin-dashboard', 'membership-management-screen', 'access-control-screen',
-        'reports-screen', 'create-user-screen', 'create-membership-screen', 'exercise-management-screen'
-    ];
-    const clientScreens = [
-        'user-profile-screen', 'user-routines-screen'
-    ];
-    const instructorScreens = [
-        'instructor-dashboard', 'my-clients-screen' // <-- Nuevo
-    ];
+    // Ocultamos todas las barras de navegación primero para empezar de cero
+    clientNavbar.style.display = 'none';
+    adminNavbar.style.display = 'none';
+    instructorNavbar.style.display = 'none';
 
-    // Lógica para mostrar la barra de navegación correcta
-    adminNavbar.style.display = adminScreens.includes(screenId) ? 'block' : 'none';
-    clientNavbar.style.display = clientScreens.includes(screenId) ? 'block' : 'none';
-    instructorNavbar.style.display = instructorScreens.includes(screenId) ? 'block' : 'none'; // <-- Nuevo
+    // Listas de pantallas para cada rol (sin cambios)
+    const adminScreens = ['admin-dashboard', 'membership-management-screen', 'access-control-screen', 'reports-screen', 'create-user-screen', 'create-membership-screen', 'exercise-management-screen', 'video-library-screen'];
+    const clientScreens = ['user-profile-screen', 'user-routines-screen', 'video-library-screen'];
+    const instructorScreens = ['instructor-dashboard', 'my-clients-screen', 'video-library-screen'];
+
+    // Lógica MEJORADA: Muestra la barra correcta basándose en el rol del usuario ACTUAL y la pantalla
+    if (currentUserData.role === 'admin' && adminScreens.includes(screenId)) {
+        adminNavbar.style.display = 'block';
+    } else if (currentUserData.role === 'instructor' && instructorScreens.includes(screenId)) {
+        instructorNavbar.style.display = 'block';
+    } else if (currentUserData.role === 'user' && clientScreens.includes(screenId)) {
+        clientNavbar.style.display = 'block';
+    }
 
     // Lógica para cargar datos automáticamente al entrar a ciertas pantallas (tu código se mantiene)
     if (screenId === 'admin-dashboard') {
@@ -1073,37 +1116,47 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
       
       
       function updateNavbarActiveState(activeScreenId) {
-    // 1. Mapeo de pantallas a sus botones de navegación (actualizado)
+    // 1. Mapeo de pantallas a sus botones (¡AHORA INCLUYE LA VIDEOTECA!)
     const screenToButtonMap = {
-        // Rol de Administrador
         'admin-dashboard': 'nav-users-btn',
-        'create-user-screen': 'nav-users-btn',
         'membership-management-screen': 'nav-memberships-btn',
-        'create-membership-screen': 'nav-memberships-btn',
-        'exercise-management-screen': 'nav-exercises-btn', // <-- Añadido
         'access-control-screen': 'nav-access-btn',
+        'exercise-management-screen': 'nav-exercises-btn',
         'reports-screen': 'nav-reports-btn',
         
-        // Rol de Cliente
         'user-profile-screen': 'nav-profile-btn',
         'user-routines-screen': 'nav-routines-btn',
         
-        // Rol de Instructor
-        'instructor-dashboard': 'nav-assign-routine-btn', // <-- Añadido
-        'my-clients-screen': 'nav-my-clients-btn'      // <-- Añadido
+        'instructor-dashboard': 'nav-assign-routine-btn',
+        'my-clients-screen': 'nav-my-clients-btn',
+
+        // Entrada especial para la pantalla compartida
+        'video-library-screen': {
+            user: 'nav-client-videos-btn',
+            instructor: 'nav-instructor-videos-btn',
+            admin: 'video-library-btn' // Para el ícono del header del admin
+        }
     };
 
-    // 2. Seleccionamos todos los botones de las TRES barras de navegación
+    // 2. Reseteamos todos los botones a su estado inactivo
     const allNavButtons = document.querySelectorAll('#admin-navbar button, #client-navbar button, #instructor-navbar button');
-
-    // 3. Reseteamos todos los botones a su estado inactivo (sin cambios en esta lógica)
     allNavButtons.forEach(btn => {
         btn.classList.remove('text-indigo-600');
         btn.classList.add('text-gray-500');
     });
 
-    // 4. Encontramos y activamos el botón correcto (sin cambios en esta lógica)
-    const activeButtonId = screenToButtonMap[activeScreenId];
+    // 3. Lógica MEJORADA para encontrar y activar el botón correcto
+    const buttonMapping = screenToButtonMap[activeScreenId];
+    let activeButtonId = null;
+
+    if (typeof buttonMapping === 'string') {
+        // Para pantallas no compartidas (ej. 'admin-dashboard')
+        activeButtonId = buttonMapping;
+    } else if (typeof buttonMapping === 'object' && currentUserData.role) {
+        // Para la pantalla compartida, selecciona el botón según el rol
+        activeButtonId = buttonMapping[currentUserData.role];
+    }
+
     if (activeButtonId) {
         const activeButton = document.getElementById(activeButtonId);
         if (activeButton) {
@@ -1118,6 +1171,7 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
         // =================================================================
         onAuthStateChanged(auth, async (user) => {
     if (user) {
+        document.getElementById('main-header').style.display = 'flex';
         // --- BÚSQUEDA DE USUARIO MEJORADA ---
         // Se busca directamente por el UID del usuario autenticado, es más eficiente
         // que traer todos los usuarios y luego buscar.
@@ -1130,6 +1184,13 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
             const userData = userDoc.data();
             currentUserData = { id: userDoc.id, ...userData }; // Guardamos los datos del usuario actual
             const userRole = userData.role;
+          
+            const videoLibraryIcon = document.getElementById('video-library-btn');
+        if (userRole === 'admin') {
+            videoLibraryIcon.style.display = 'block'; // Se muestra para el admin
+        } else {
+            videoLibraryIcon.style.display = 'none';  // Se oculta para otros roles
+        }
 
             // --- LÓGICA DE REDIRECCIÓN BASADA EN ROL ---
             if (userRole === 'admin') {
@@ -1212,6 +1273,7 @@ const failureSound = new Audio('Acceso_Denegado.mp3');
             signOut(auth);
         }
     } else {
+    document.getElementById('main-header').style.display = 'none'; 
     currentUserData = {}; // Limpiar datos al cerrar sesión
     document.getElementById('admin-navbar').style.display = 'none';
     document.getElementById('client-navbar').style.display = 'none';
@@ -2650,6 +2712,129 @@ function updateRevenuePieChart(selectedMonthKey) {
       
       
 // =================================================================
+// FUNCIÓN AUXILIAR PARA OBTENER ID DE VIDEO DE YOUTUBE
+// =================================================================
+function getYoutubeVideoId(url) {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+      
+// =================================================================
+// GESTIÓN DE VIDEOTECA (NUEVA SECCIÓN)
+// =================================================================
+
+// Carga y muestra los videos desde Firestore, ajustando la vista según el rol
+async function fetchAndDisplayVideos(userRole) {
+    const container = document.getElementById('video-list-container');
+    const addVideoBtn = document.getElementById('add-video-btn');
+    container.innerHTML = '<p>Cargando videos...</p>';
+
+    // Mostrar u ocultar el botón de "Agregar Video" según el rol
+    if (userRole === 'admin') {
+        addVideoBtn.style.display = 'flex';
+    } else {
+        addVideoBtn.style.display = 'none';
+    }
+
+    const videosCollection = collection(db, "videos");
+    const videosSnap = await getDocs(videosCollection);
+
+    container.innerHTML = '';
+    if (videosSnap.empty) {
+        container.innerHTML = '<p class="col-span-full text-center text-gray-500">Aún no hay videos en la biblioteca.</p>';
+        return;
+    }
+
+    videosSnap.forEach(doc => {
+        const video = { id: doc.id, ...doc.data() };
+        const videoCard = document.createElement('div');
+        videoCard.className = 'bg-white shadow-lg rounded-lg overflow-hidden';
+        
+        // Crear dinámicamente los botones de admin solo si el rol es 'admin'
+        const adminButtonsHTML = userRole === 'admin' ? `
+            <div class="flex justify-end space-x-2">
+                <button class="edit-video-btn text-indigo-600 hover:text-indigo-900" data-id="${video.id}"><i class="fas fa-edit"></i> Editar</button>
+                <button class="delete-video-btn text-red-600 hover:text-red-900" data-id="${video.id}"><i class="fas fa-trash"></i> Eliminar</button>
+            </div>
+        ` : '';
+
+        videoCard.innerHTML = `
+            <div class="aspect-w-16 aspect-h-9">
+                <iframe src="https://www.youtube.com/embed/${video.videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div class="p-4">
+                <h3 class="font-bold text-lg mb-2">${video.title}</h3>
+                <p class="text-gray-600 text-sm mb-4">${video.description || 'Sin descripción.'}</p>
+                ${adminButtonsHTML}
+            </div>
+        `;
+        container.appendChild(videoCard);
+    });
+}
+
+// Guarda un video (nuevo o editado) en Firestore
+async function saveVideo() {
+    // ... (Esta función no necesita cambios)
+    const docId = document.getElementById('video-doc-id').value;
+    const url = document.getElementById('video-url').value;
+    const videoId = getYoutubeVideoId(url);
+
+    if (!videoId) {
+        alert('Por favor, introduce una URL de YouTube válida.');
+        return;
+    }
+
+    const videoData = {
+        title: document.getElementById('video-title').value,
+        description: document.getElementById('video-description').value,
+        videoId: videoId,
+    };
+
+    if (docId) {
+        await updateDoc(doc(db, "videos", docId), videoData);
+        alert('Video actualizado correctamente.');
+    } else {
+        await addDoc(collection(db, "videos"), videoData);
+        alert('Video agregado correctamente.');
+    }
+
+    document.getElementById('video-modal').classList.add('hidden');
+    // Llamada actualizada para pasar el rol
+    fetchAndDisplayVideos(currentUserData.role);
+}
+
+// Prepara el modal para editar un video existente
+async function editVideo(docId) {
+    // ... (Esta función no necesita cambios)
+    const videoRef = doc(db, "videos", docId);
+    const videoSnap = await getDoc(videoRef);
+    if (videoSnap.exists()) {
+        const data = videoSnap.data();
+        document.getElementById('video-modal-title').textContent = 'Editar Video';
+        document.getElementById('video-doc-id').value = docId;
+        document.getElementById('video-title').value = data.title;
+        document.getElementById('video-url').value = `https://www.youtube.com/watch?v=${data.videoId}`;
+        document.getElementById('video-description').value = data.description || '';
+        document.getElementById('video-modal').classList.remove('hidden');
+    }
+}
+
+// Elimina un video de Firestore
+async function deleteVideo(docId) {
+    if (confirm('¿Estás seguro de que quieres eliminar este video?')) {
+        await deleteDoc(doc(db, "videos", docId));
+        alert('Video eliminado.');
+        // Llamada actualizada para pasar el rol
+        fetchAndDisplayVideos(currentUserData.role);
+    }
+}
+      
+
+      
+      
+// =================================================================
 // REPORTES
 // =================================================================
 async function generateReports() {
@@ -2887,6 +3072,71 @@ document.addEventListener('DOMContentLoaded', () => {
         const searchTerm = e.target.value.toLowerCase();
         filterUsers(searchTerm);
     });
+  
+  // Evento para el nuevo ícono de Videoteca en la barra superior
+// 1. Botón del ÍCONO en la barra superior (Solo para Admin)
+document.getElementById('video-library-btn').addEventListener('click', () => {
+    // Verificamos que sea admin antes de actuar
+    if (currentUserData.role === 'admin') {
+        showScreen('video-library-screen');
+        fetchAndDisplayVideos(currentUserData.role);
+    }
+});
+
+// 2. Botón para VOLVER desde la videoteca (funciona para todos los roles)
+document.getElementById('videos-back-to-users-btn').addEventListener('click', () => {
+    // Regresa a la pantalla principal correspondiente a cada rol
+    if (currentUserData.role === 'admin') {
+        showScreen('admin-dashboard');
+    } else if (currentUserData.role === 'instructor') {
+        showScreen('instructor-dashboard');
+    } else {
+        showScreen('user-profile-screen');
+    }
+});
+
+// 3. Botón en la barra inferior del CLIENTE
+document.getElementById('nav-client-videos-btn').addEventListener('click', () => {
+    showScreen('video-library-screen');
+    fetchAndDisplayVideos(currentUserData.role);
+});
+
+// 4. Botón en la barra inferior del INSTRUCTOR
+document.getElementById('nav-instructor-videos-btn').addEventListener('click', () => {
+    showScreen('video-library-screen');
+    fetchAndDisplayVideos(currentUserData.role);
+});
+
+
+// --- Lógica del Modal de Videos (esta parte no necesita cambios, pero se incluye para que todo esté junto) ---
+const videoModal = document.getElementById('video-modal');
+document.getElementById('add-video-btn').addEventListener('click', () => {
+    document.getElementById('video-form').reset();
+    document.getElementById('video-doc-id').value = '';
+    document.getElementById('video-modal-title').textContent = 'Agregar Nuevo Video';
+    videoModal.classList.remove('hidden');
+});
+
+document.getElementById('close-video-modal').addEventListener('click', () => {
+    videoModal.classList.add('hidden');
+});
+
+document.getElementById('video-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    saveVideo();
+});
+
+document.getElementById('video-list-container').addEventListener('click', (e) => {
+    const editBtn = e.target.closest('.edit-video-btn');
+    const deleteBtn = e.target.closest('.delete-video-btn');
+    
+    if (editBtn) {
+        editVideo(editBtn.dataset.id);
+    }
+    if (deleteBtn) {
+        deleteVideo(deleteBtn.dataset.id);
+    }
+});
   
     // Evento para el nuevo botón de Limpiar en Control de Acceso
 document.getElementById('clear-access-btn').addEventListener('click', () => {
@@ -3232,6 +3482,35 @@ document.getElementById('cancel-edit-transaction-btn').addEventListener('click',
 
             <div class="flex justify-end bg-gray-50 px-6 py-3 border-t flex-shrink-0">
                 <button type="submit" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md">Guardar Ejercicio</button>
+            </div>
+        </form>
+    </div>
+</div>
+      
+      
+      
+      <div id="video-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg animate-fadeIn">
+        <div class="flex justify-between items-center border-b px-6 py-4">
+            <h3 id="video-modal-title" class="text-lg font-semibold">Agregar Nuevo Video</h3>
+            <button type="button" id="close-video-modal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        <form id="video-form" class="p-6 space-y-4">
+            <input type="hidden" id="video-doc-id">
+            <div>
+                <label for="video-title" class="block text-sm font-medium text-gray-700">Título del Video</label>
+                <input type="text" id="video-title" required class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
+            </div>
+            <div>
+                <label for="video-url" class="block text-sm font-medium text-gray-700">URL de YouTube</label>
+                <input type="url" id="video-url" required placeholder="https://www.youtube.com/watch?v=..." class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
+            </div>
+            <div>
+                <label for="video-description" class="block text-sm font-medium text-gray-700">Descripción (Opcional)</label>
+                <textarea id="video-description" rows="3" class="input-field mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></textarea>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button type="submit" class="btn-primary bg-indigo-600 text-white py-2 px-4 rounded-md">Guardar Video</button>
             </div>
         </form>
     </div>
